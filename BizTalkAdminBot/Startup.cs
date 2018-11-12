@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
-
+﻿#region References
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
@@ -14,6 +12,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Schema;
+using System.Collections.Generic;
+using BizTalkAdminBot.Helpers;
+#endregion
 
 namespace BizTalkAdminBot
 {
@@ -54,13 +57,13 @@ namespace BizTalkAdminBot
         /// <seealso cref="https://docs.microsoft.com/en-us/azure/bot-service/bot-service-manage-channels?view=azure-bot-service-4.0"/>
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddBot<EchoWithCounterBot>(options =>
+            services.AddBot<BizTalkAdminBot>(options =>
             {
                 var secretKey = Configuration.GetSection("botFileSecret")?.Value;
                 var botFilePath = Configuration.GetSection("botFilePath")?.Value;
 
                 // Loads .bot configuration file and adds a singleton that your Bot can access through dependency injection.
-                var botConfig = BotConfiguration.Load(botFilePath ?? @".\BotConfiguration.bot", secretKey);
+                var botConfig = BotConfiguration.Load(botFilePath ?? @".\BizTalkAdminBot.bot", secretKey);
                 services.AddSingleton(sp => botConfig ?? throw new InvalidOperationException($"The .bot config file could not be loaded. ({botConfig})"));
 
                 // Retrieve current endpoint.
@@ -74,13 +77,21 @@ namespace BizTalkAdminBot
                 options.CredentialProvider = new SimpleCredentialProvider(endpointService.AppId, endpointService.AppPassword);
 
                 // Creates a logger for the application to use.
-                ILogger logger = _loggerFactory.CreateLogger<EchoWithCounterBot>();
+                ILogger logger = _loggerFactory.CreateLogger<BizTalkAdminBot>();
 
                 // Catches any errors that occur during a conversation turn and logs them.
                 options.OnTurnError = async (context, exception) =>
                 {
                     logger.LogError($"Exception caught : {exception}");
-                    await context.SendActivityAsync("Sorry, it looks like something went wrong.");
+
+                    string errorAdaptiveCardString = GenericHelpers.ReadTextFromFile(@"./wwwroot/Resources/AdaptiveCards/ErrorMessage.json");
+                    var reply = context.Activity.CreateReply();
+                    reply.Attachments = new List<Attachment>()
+                    {
+                        DialogHelpers.CreateAdaptiveCardAttachment(errorAdaptiveCardString)
+                    };
+                    
+                    await context.SendActivityAsync(reply);
                 };
 
                 // The Memory Storage used here is for local bot debugging only. When the bot
@@ -110,11 +121,15 @@ namespace BizTalkAdminBot
                 var conversationState = new ConversationState(dataStore);
 
                 options.State.Add(conversationState);
+
+                var userState = new UserState(dataStore);
+
+                options.State.Add(userState);
             });
 
             // Create and register state accesssors.
             // Acessors created here are passed into the IBot-derived class on every turn.
-            services.AddSingleton<EchoBotAccessors>(sp =>
+            services.AddSingleton<BizTalkAdminBotAccessors>(sp =>
             {
                 var options = sp.GetRequiredService<IOptions<BotFrameworkOptions>>().Value;
                 if (options == null)
@@ -128,11 +143,19 @@ namespace BizTalkAdminBot
                     throw new InvalidOperationException("ConversationState must be defined and added before adding conversation-scoped state accessors.");
                 }
 
+                var userState = options.State.OfType<UserState>().FirstOrDefault();
+
+                if (userState == null)
+                {
+                    throw new InvalidOperationException("User State mjust be defined and added befor the conversation scoping");
+                }
+
                 // Create the custom state accessor.
                 // State accessors enable other components to read and write individual properties of state.
-                var accessors = new EchoBotAccessors(conversationState)
+                var accessors = new BizTalkAdminBotAccessors(conversationState, userState)
                 {
-                    CounterState = conversationState.CreateProperty<CounterState>(EchoBotAccessors.CounterStateName),
+                    CommandState = userState.CreateProperty<string>(BizTalkAdminBotAccessors.CommandStateName),
+                    ConversationDialogState = userState.CreateProperty<DialogState>(BizTalkAdminBotAccessors.DialogStateName),
                 };
 
                 return accessors;

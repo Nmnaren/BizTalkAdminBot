@@ -1,0 +1,46 @@
+﻿{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "TextBlock",
+      "id": "selectOperation",
+      "horizontalAlignment": "Left",
+      "weight": "Bolder",
+      "color": "Accent",
+      "text": "Select Any one of the operation"
+    },
+    {
+      "type": "Input.ChoiceSet",
+      "id": "operationInputChoice",
+      "placeholder": "Placeholder text",
+      "choices": [
+        {
+          "title": "Get Hosts",
+          "value": "gethosts"
+        },
+        {
+          "title": "Get Send Ports By App",
+          "value": "getsendportsbyapp"
+        },
+        {
+          "title": "Get Orchestrations By App",
+          "value": "getorchbyapp"
+        },
+        {
+          "title": "Get Suspended Instance By App",
+          "value": "getsuspendedinstancesbyapp"
+        }
+      ],
+      "style": "expanded"
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.Submit",
+      "id": "submit",
+      "title": "Submit"
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.0"
+}

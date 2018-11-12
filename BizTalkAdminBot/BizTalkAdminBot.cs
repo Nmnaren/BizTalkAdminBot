@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using BizTalkAdminBot.Helpers;
+using BizTalkAdminBot.Models;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace BizTalkAdminBot
 {
@@ -20,25 +25,25 @@ namespace BizTalkAdminBot
     /// <see cref="IStatePropertyAccessor{T}"/> object are created with a singleton lifetime.
     /// </summary>
     /// <seealso cref="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-2.1"/>
-    public class EchoWithCounterBot : IBot
+    public class BizTalkAdminBot : IBot
     {
-        private readonly EchoBotAccessors _accessors;
+        private readonly BizTalkAdminBotAccessors _accessors;
         private readonly ILogger _logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EchoWithCounterBot"/> class.
+        /// Initializes a new instance of the <see cref="BizTalkAdminBot"/> class.
         /// </summary>
         /// <param name="accessors">A class containing <see cref="IStatePropertyAccessor{T}"/> used to manage state.</param>
         /// <param name="loggerFactory">A <see cref="ILoggerFactory"/> that is hooked to the Azure App Service provider.</param>
         /// <seealso cref="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-2.1#windows-eventlog-provider"/>
-        public EchoWithCounterBot(EchoBotAccessors accessors, ILoggerFactory loggerFactory)
+        public BizTalkAdminBot(BizTalkAdminBotAccessors accessors, ILoggerFactory loggerFactory)
         {
             if (loggerFactory == null)
             {
                 throw new System.ArgumentNullException(nameof(loggerFactory));
             }
 
-            _logger = loggerFactory.CreateLogger<EchoWithCounterBot>();
+            _logger = loggerFactory.CreateLogger<BizTalkAdminBot>();
             _logger.LogTrace("EchoBot turn start.");
             _accessors = accessors ?? throw new System.ArgumentNullException(nameof(accessors));
         }
@@ -64,24 +69,44 @@ namespace BizTalkAdminBot
             if (turnContext.Activity.Type == ActivityTypes.Message)
             {
                 // Get the conversation state from the turn context.
-                var state = await _accessors.CounterState.GetAsync(turnContext, () => new CounterState());
+                //var state = await _accessors.CounterState.GetAsync(turnContext, () => new CounterState());
 
                 // Bump the turn count for this conversation.
-                state.TurnCount++;
+                //state.TurnCount++;
 
                 // Set the property using the accessor.
-                await _accessors.CounterState.SetAsync(turnContext, state);
+                //await _accessors.CounterState.SetAsync(turnContext, state);
 
                 // Save the new turn count into the conversation state.
                 await _accessors.ConversationState.SaveChangesAsync(turnContext);
 
                 // Echo back to the user whatever they typed.
-                var responseMessage = $"Turn {state.TurnCount}: You sent '{turnContext.Activity.Text}'\n";
-                await turnContext.SendActivityAsync(responseMessage);
+                string sampleJsonMessage = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplicationsResponse.json");
+                List<BizTalkApplication> applications = JsonConvert.DeserializeObject<List<BizTalkApplication>>(sampleJsonMessage);
+
+
+                string welcomeAdaptiveCard = AdaptiveCardsHelper.CreateGetApplicationsAdaptiveCard(applications);
+
+                welcomeAdaptiveCard = welcomeAdaptiveCard.Replace("http://localhost/{0}", string.Format(Constants.CardImageUrl, Constants.BizManImage));
+
+                var reply = turnContext.Activity.CreateReply();
+                reply.Attachments = new List<Attachment>()
+                {
+                    DialogHelpers.CreateAdaptiveCardAttachment(welcomeAdaptiveCard),
+                };
+
+                await turnContext.SendActivityAsync(reply);
             }
             else
             {
-                await turnContext.SendActivityAsync($"{turnContext.Activity.Type} event detected");
+                string WelcomeAdaptiveCard = GenericHelpers.ReadTextFromFile(@"./wwwroot/Resources/AdaptiveCards/WelcomeMessage.json");
+                var reply = turnContext.Activity.CreateReply();
+                reply.Attachments = new List<Attachment>()
+                {
+                    DialogHelpers.CreateAdaptiveCardAttachment(WelcomeAdaptiveCard),
+                };
+
+                await turnContext.SendActivityAsync(reply);
             }
         }
     }

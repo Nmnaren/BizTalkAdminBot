@@ -1,0 +1,52 @@
+﻿[
+  {
+    "Name": "BizTalk.System",
+    "Description": "System Application",
+    "IsDefaultApplication": false,
+    "IsSystem": true,
+    "Status": "NotApplicable",
+    "IsConfigured": true,
+    "ApplicationReferences": [],
+    "ApplicationBackReferences": [
+      "BizTalk Application 1",
+      "BizTalk.EnterpriseApplication",
+      "ConfigureHTTPReceiveUsingBTDF"
+    ]
+  },
+  {
+    "Name": "BizTalk Application 1",
+    "Description": "BizTalk Application 1",
+    "IsDefaultApplication": true,
+    "IsSystem": false,
+    "Status": "NotApplicable",
+    "IsConfigured": true,
+    "ApplicationReferences": [
+      "BizTalk.System"
+    ],
+    "ApplicationBackReferences": []
+  },
+  {
+    "Name": "BizTalk.EnterpriseApplication",
+    "Description": "Application for Microsoft BizTalk Adapters for Enterprise Applications",
+    "IsDefaultApplication": false,
+    "IsSystem": false,
+    "Status": "NotApplicable",
+    "IsConfigured": true,
+    "ApplicationReferences": [
+      "BizTalk.System"
+    ],
+    "ApplicationBackReferences": []
+  },
+  {
+    "Name": "ConfigureHTTPReceiveUsingBTDF",
+    "Description": "ConfigureHTTPReceiveUsingBTDF",
+    "IsDefaultApplication": false,
+    "IsSystem": false,
+    "Status": "Started",
+    "IsConfigured": true,
+    "ApplicationReferences": [
+      "BizTalk.System"
+    ],
+    "ApplicationBackReferences": []
+  }
+]
