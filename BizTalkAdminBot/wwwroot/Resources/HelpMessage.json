@@ -1,0 +1,61 @@
+{
+    "type": "AdaptiveCard",
+    "body": [
+        {
+            "type": "Container",
+            "items": [
+                {
+                    "type": "TextBlock",
+                    "id": "selectOperation",
+                    "horizontalAlignment": "Left",
+                    "weight": "Bolder",
+                    "color": "Accent",
+                    "text": "Select Any one of the operation"
+                },
+                {
+                    "type": "Input.ChoiceSet",
+                    "id": "operationInputChoice",
+                    "placeholder": "Placeholder text",
+                    "choices": [
+                        {
+                            "title": "Get Hosts",
+                            "value": "gethosts"
+                        },
+                        {
+                            "title": "Get Send Ports By App",
+                            "value": "getsendportsbyapp"
+                        },
+                        {
+                            "title": "Get Orchestrations By App",
+                            "value": "getorchbyapp"
+                        },
+                        {
+                            "title": "Get Suspended Instance By App",
+                            "value": "getsuspendedinstancesbyapp"
+                        },
+                        {
+                            "title": "Get All Applications",
+                            "value": "getallapplications"
+                        }
+                    ],
+                    "style": "expanded"
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "type": "Action.Submit",
+            "id": "submit",
+            "title": "Submit"
+        },
+        {
+            "type": "Action.OpenUrl",
+            "id": "Action.KnowMe",
+            "title": "Know More About BizTalk",
+            "url": "https://www.microsoft.com/en-us/cloud-platform/biztalk"
+        }
+    ],
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.0"
+}

@@ -13,6 +13,11 @@
     public class Constants
     {
         /// <summary>
+        /// Connection Name of the Oauth Setting used from Bot Channels Registration
+        public const string OAuthConnectionName = "AADV2";
+
+
+        /// <summary>
         /// Login Prompt Name which will be used to send out a sign in card
         /// </summary>
         public const string LoginPromtName = "loginPrompt";

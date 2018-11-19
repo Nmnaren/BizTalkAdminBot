@@ -3,7 +3,9 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
@@ -11,6 +13,7 @@ using BizTalkAdminBot.Helpers;
 using BizTalkAdminBot.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+
 
 namespace BizTalkAdminBot
 {
@@ -30,6 +33,8 @@ namespace BizTalkAdminBot
         private readonly BizTalkAdminBotAccessors _accessors;
         private readonly ILogger _logger;
 
+        private readonly DialogSet _dialogs;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BizTalkAdminBot"/> class.
         /// </summary>
@@ -43,9 +48,19 @@ namespace BizTalkAdminBot
                 throw new System.ArgumentNullException(nameof(loggerFactory));
             }
 
+            if(Constants.OAuthConnectionName == null)
+            {
+                throw new System.ArgumentNullException("Connection Name");
+            }
+
             _logger = loggerFactory.CreateLogger<BizTalkAdminBot>();
-            _logger.LogTrace("EchoBot turn start.");
+            _logger.LogTrace("BizTalkAdminBot Conctructor Invoked");
             _accessors = accessors ?? throw new System.ArgumentNullException(nameof(accessors));
+
+            _dialogs = new DialogSet(_accessors.ConversationDialogState);
+            _dialogs.Add(DialogHelpers.OAuthPrompt(Constants.OAuthConnectionName));
+            _dialogs.Add(new WaterfallDialog(Constants.RootDialogName, new WaterfallStep[] {PromptStepAsync, ProcessStepAsync}));
+            
         }
 
         /// <summary>
@@ -63,51 +78,170 @@ namespace BizTalkAdminBot
         /// <seealso cref="IMiddleware"/>
         public async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
         {
-            // Handle Message activity type, which is the main activity type for shown within a conversational interface
-            // Message activities may contain text, speech, interactive cards, and binary or unknown attachments.
-            // see https://aka.ms/about-bot-activity-message to learn more about the message and other activity types
-            if (turnContext.Activity.Type == ActivityTypes.Message)
+            DialogContext dialogContext = null;
+
+            switch(turnContext.Activity.Type)
             {
-                // Get the conversation state from the turn context.
-                //var state = await _accessors.CounterState.GetAsync(turnContext, () => new CounterState());
+                case ActivityTypes.Message:
+                    await ProcessInputCommandsAsync(turnContext, cancellationToken);
+                    break;
+                
+                case ActivityTypes.Event:
+                case ActivityTypes.Invoke:
 
-                // Bump the turn count for this conversation.
-                //state.TurnCount++;
+                    // Check if the Invoke activity type is emitted by any channel other than msteam
+                    if (turnContext.Activity.Type == ActivityTypes.Invoke && turnContext.Activity.ChannelId != "msteams")
+                    {
+                        throw new System.InvalidOperationException("The Invoke type is only valid onthe MSTeams channel.");
+                    }
+                    dialogContext = await _dialogs.CreateContextAsync(turnContext, cancellationToken);
+                    await dialogContext.ContinueDialogAsync(cancellationToken);
+                    if (!turnContext.Responded)
+                    {
+                        await dialogContext.BeginDialogAsync(Constants.RootDialogName, cancellationToken: cancellationToken);
+                    }
+                    break;
 
-                // Set the property using the accessor.
-                //await _accessors.CounterState.SetAsync(turnContext, state);
+                case ActivityTypes.ConversationUpdate:
+                    foreach(var member in turnContext.Activity.MembersAdded)
+                    {
+                        if(member.Id != turnContext.Activity.Recipient.Id)
+                        {
+                            var reply = turnContext.Activity.CreateReply();
+                            string welcomeAdaptiveCardJson = GenericHelpers.ReadTextFromFile(@"./wwwroot/Resources/AdaptiveCards/WelcomeMessage.json");
+                            reply.Attachments = new List<Attachment>()
+                            {
+                                DialogHelpers.CreateAdaptiveCardAttachment(welcomeAdaptiveCardJson)
 
-                // Save the new turn count into the conversation state.
-                await _accessors.ConversationState.SaveChangesAsync(turnContext);
+                            };
+                            await turnContext.SendActivityAsync(reply, cancellationToken);
+                        }
+                    }
+                    break;  
+            }
+        }
 
-                // Echo back to the user whatever they typed.
-                string sampleJsonMessage = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplicationsResponse.json");
-                List<BizTalkApplication> applications = JsonConvert.DeserializeObject<List<BizTalkApplication>>(sampleJsonMessage);
+        #region DialogTasks
+
+        public async Task<DialogContext> ProcessInputCommandsAsync(ITurnContext turnContext, CancellationToken cancellationToken)
+        {
+            DialogContext dc = await _dialogs.CreateContextAsync(turnContext, cancellationToken);
+            
+            var activity = dc.Context.Activity;
+
+            string command = await DialogHelpers.ParseCommand(activity);
+
+            switch(command)
+            {
+                case "signout":
+                case "signoff":
+                case "logoff":
+                case "logout":
+
+                    var botAdapter = (BotFrameworkAdapter)turnContext.Adapter;
+                    await botAdapter.SignOutUserAsync(turnContext, connectionName:Constants.OAuthConnectionName, cancellationToken: cancellationToken);
+                    await turnContext.SendActivityAsync("You are now signed out. \n Please close the chat window or type in anything to begin again", cancellationToken: cancellationToken);
+                    await dc.EndDialogAsync(Constants.RootDialogName, cancellationToken);
+                    break;
+                
+                case "help":
+
+                    var reply = turnContext.Activity.CreateReply();
+                    var helpCardJson = GenericHelpers.ReadTextFromFile(@".\wwwroot\Resources\AdaptiveCards\HelpMessage.json");
+                    reply.Attachments = new List<Attachment>()
+                    {
+                        DialogHelpers.CreateAdaptiveCardAttachment(helpCardJson)
+                    };
+                    await turnContext.SendActivityAsync(reply, cancellationToken);
+                    break;
+
+                default:
+                    await dc.ContinueDialogAsync(cancellationToken);
+                    if(!turnContext.Responded)
+                    {
+                        await dc.BeginDialogAsync(Constants.RootDialogName, cancellationToken);
+                    }
+                    break;
+                
+            }
+            return dc;
+        }
+
+        private async Task<DialogTurnResult> PromptStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            var activity = stepContext.Context.Activity;
 
 
-                string welcomeAdaptiveCard = AdaptiveCardsHelper.CreateGetApplicationsAdaptiveCard(applications);
+            //If the activity is the message type and not a magic code then we set the command name and save the user state
+            //Post that we begin the Login Dialog.
+            if(activity.Type == ActivityTypes.Message && !Regex.IsMatch(activity.Text, @"(\d{6})"))
+            {
+                await _accessors.CommandState.SetAsync(stepContext.Context, activity.Text, cancellationToken);
+                await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
+            }
 
-                welcomeAdaptiveCard = welcomeAdaptiveCard.Replace("http://localhost/{0}", string.Format(Constants.CardImageUrl, Constants.BizManImage));
+            return await stepContext.BeginDialogAsync(Constants.LoginPromtName, cancellationToken: cancellationToken);
+        }
+        
 
-                var reply = turnContext.Activity.CreateReply();
-                reply.Attachments = new List<Attachment>()
+        private async Task<DialogTurnResult> ProcessStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            //Check if the dialog called in the previous step was executed successfully
+            if(stepContext.Result != null)
+            {
+                //Check if the the Token exist with the Azure Bot Service
+                var tokenResponse = stepContext.Result as TokenResponse;
+
+                if(tokenResponse?.Token != null)
                 {
-                    DialogHelpers.CreateAdaptiveCardAttachment(welcomeAdaptiveCard),
-                };
+                    var parts = _accessors.CommandState.GetAsync(stepContext.Context, () => string.Empty, cancellationToken: cancellationToken).Result.Split(' ');
+                    string command = parts[0].ToLowerInvariant();
 
-                await turnContext.SendActivityAsync(reply);
+                    if(command == "getallapplications")
+                    {
+                        string sampleJsonMessage = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplicationsResponse.json");
+                        List<BizTalkApplication> applications = JsonConvert.DeserializeObject<List<BizTalkApplication>>(sampleJsonMessage);
+
+                        string welcomeAdaptiveCardJson = AdaptiveCardsHelper.CreateGetApplicationsAdaptiveCard(applications);
+
+                        welcomeAdaptiveCardJson = welcomeAdaptiveCardJson.Replace("http://localhost/{0}", string.Format(Constants.CardImageUrl, Constants.BizManImage));
+
+                        var reply = stepContext.Context.Activity.CreateReply();
+                        reply.Attachments = new List<Attachment>()
+                        {
+                            DialogHelpers.CreateAdaptiveCardAttachment(welcomeAdaptiveCardJson)
+                        };
+
+                        await stepContext.Context.SendActivityAsync(reply);
+
+
+                    }
+                    else
+                    {
+                        var reply = stepContext.Context.Activity.CreateReply();
+                        string operationsJson = GenericHelpers.ReadTextFromFile(@".\wwwroot\Resources\AdaptiveCards\Operations.json");
+                        reply.Attachments = new List<Attachment>()
+                        {
+                            DialogHelpers.CreateAdaptiveCardAttachment(operationsJson)
+                        };
+                        await stepContext.Context.SendActivityAsync(reply);
+                    }
+
+
+                }
+
             }
             else
             {
-                string WelcomeAdaptiveCard = GenericHelpers.ReadTextFromFile(@"./wwwroot/Resources/AdaptiveCards/WelcomeMessage.json");
-                var reply = turnContext.Activity.CreateReply();
-                reply.Attachments = new List<Attachment>()
-                {
-                    DialogHelpers.CreateAdaptiveCardAttachment(WelcomeAdaptiveCard),
-                };
-
-                await turnContext.SendActivityAsync(reply);
+                await stepContext.Context.SendActivityAsync("We couldn't log you in. Please try again later.", cancellationToken: cancellationToken);
+                
+            
             }
+            await _accessors.CommandState.DeleteAsync(stepContext.Context, cancellationToken);
+            return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
         }
+
+    
+        #endregion
     }
 }

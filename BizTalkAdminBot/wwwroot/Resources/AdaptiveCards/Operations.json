@@ -29,7 +29,12 @@
         {
           "title": "Get Suspended Instance By App",
           "value": "getsuspendedinstancesbyapp"
+        },
+        {
+          "title": "Get All Applications",
+          "value": "getallapplications"
         }
+
       ],
       "style": "expanded"
     }
