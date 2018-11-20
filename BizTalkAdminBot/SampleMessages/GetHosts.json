@@ -1,0 +1,16 @@
+﻿[
+  {
+    "Name": "BizTalkServerApplication",
+    "IsDefault": true,
+    "NTGroupName": "BizTalk Application Users",
+    "Type": "InProcess",
+    "IsTrusted": false
+  },
+  {
+    "Name": "BizTalkServerIsolatedHost",
+    "IsDefault": false,
+    "NTGroupName": "BizTalk Isolated Host Users",
+    "Type": "Isolated",
+    "IsTrusted": false
+  }
+]

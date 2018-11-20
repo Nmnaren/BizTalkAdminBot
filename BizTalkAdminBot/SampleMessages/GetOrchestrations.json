@@ -1,0 +1,31 @@
+﻿[
+  {
+    "FullName": "ConfigureHTTPReceiveUsingBTDF.Orchs.NameAppender",
+    "AssemblyName": "ConfigureHTTPReceiveUsingBTDF.Orchs",
+    "ApplicationName": "ConfigureHTTPReceiveUsingBTDF",
+    "Description": "",
+    "Status": "Unenlisted",
+    "Host": "BizTalkServerApplication",
+    "InboundPorts": [
+      {
+        "Name": "HTTPReceivePort",
+        "Binding": "Logical",
+        "ReceivePort": "HTTPReceivePort",
+        "PortType": "ConfigureHTTPReceiveUsingBTDF.Orchs.PortType_HTTPReceive"
+      }
+    ],
+    "OutboundPorts": [],
+    "UsedRoles": [],
+    "ImplementedRoles": [],
+    "InvokedOrchestrations": [],
+    "Tracking": {
+      "ServiceStartEnd": true,
+      "MessageSendReceive": true,
+      "InboundMessageBody": false,
+      "OutboundMessageBody": false,
+      "OrchestartionEvents": true,
+      "TrackPropertiesForIncomingMessages": false,
+      "TrackPropertiesForOutgoingMessages": false
+    }
+  }
+]
