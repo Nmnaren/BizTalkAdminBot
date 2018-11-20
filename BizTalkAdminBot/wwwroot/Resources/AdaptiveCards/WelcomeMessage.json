@@ -50,7 +50,13 @@
       "type": "Action.Submit",
       "id": "action.login",
       "title": "Log In",
-      "data": "Login"
+      "data": "login"
+    },
+    {
+      "type": "Action.Submit",
+      "id": "action.login",
+      "title": "Help",
+      "data": "help"
     },
     {
       "type": "Action.OpenUrl",

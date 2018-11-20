@@ -39,8 +39,6 @@ namespace BizTalkAdminBot.Helpers
             return adaptiveCard;
         }
 
-    
-
         public static OAuthPrompt OAuthPrompt(string connectionName)
         {
             var oauthPrompt = new OAuthPrompt(
@@ -57,8 +55,7 @@ namespace BizTalkAdminBot.Helpers
             return oauthPrompt;
             
         }
-
-        public static async Task<string> ParseCommand(Activity activity)
+        public static string ParseCommand(Activity activity)
         {
             string command = string.Empty;
 
@@ -73,6 +70,18 @@ namespace BizTalkAdminBot.Helpers
                 command = token["operationInputChoice"].Value<string>();
             }
             return command;
+        }
+
+        public static Activity CreateOperationsReply(WaterfallStepContext stepContext)
+        {
+            var reply = stepContext.Context.Activity.CreateReply();
+            string operationMessageJson = GenericHelpers.ReadTextFromFile(@"wwwroot\Resources\AdaptiveCards\OperationsMessage.json");
+            reply.Attachments = new List<Attachment>()
+                {
+                    //DialogHelpers.CreateBotFunctionsHeroCard("Your Options").ToAttachment()
+                    DialogHelpers.CreateAdaptiveCardAttachment(operationMessageJson)
+                };
+            return reply;
         }
 
 

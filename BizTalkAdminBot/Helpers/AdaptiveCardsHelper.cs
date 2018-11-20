@@ -187,7 +187,6 @@ namespace BizTalkAdminBot.Helpers
             adaptiveCard.Body.Add(topLevelColumnSet);
             adaptiveCard.Body.Add(applicationColumnSet);
 
-            AdaptiveCard operationCard = ParseAdaptiveCard(@".\wwwroot\Resources\AdaptiveCards\Operations.json");
 
             List<AdaptiveAction> cardActions = new List<AdaptiveAction>()
             {
@@ -196,13 +195,6 @@ namespace BizTalkAdminBot.Helpers
                     Id = "bizTalkResources",
                     Title = "BizTalkResources",
                     Url = new Uri("https://social.technet.microsoft.com/wiki/contents/articles/2240.biztalk-server-resources-on-the-technet-wiki.aspx")
-                },
-                
-                new AdaptiveShowCardAction()
-                {
-                    Id = "showOptionCard",
-                    Card = operationCard,
-                    Title = "WhatNext"
                 }
 
             };
