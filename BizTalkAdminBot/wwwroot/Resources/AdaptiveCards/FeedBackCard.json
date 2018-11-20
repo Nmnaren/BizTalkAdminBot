@@ -1,0 +1,56 @@
+{
+    "type": "AdaptiveCard",
+    "body": [
+        {
+            "type": "TextBlock",
+            "horizontalAlignment": "Center",
+            "size": "Medium",
+            "weight": "Bolder",
+            "text": "Feed Back Form"
+        },
+        {
+            "type": "TextBlock",
+            "text": "Please fill out the details below."
+        },
+        {
+            "type": "Input.Text",
+            "id": "NameVal",
+            "placeholder": "Name"
+        },
+        {
+            "type": "Input.Text",
+            "id": "EmailVal",
+            "placeholder": "Email",
+            "style": "Email"
+        },
+        {
+            "type": "Input.Text",
+            "id": "TelVal",
+            "placeholder": "Phone",
+            "style": "Tel"
+        },
+        {
+            "type": "Input.Text",
+            "id": "MultiLineVal",
+            "placeholder": "Comments",
+            "isMultiline": true
+        },
+        {
+            "type": "Input.Toggle",
+            "id": "AcceptsTerms",
+            "title": "I accept the terms and conditions (True/False)",
+            "value": "false"
+        }
+    ],
+    "actions": [
+        {
+            "type": "Action.Submit",
+            "title": "Submit",
+            "data": {
+                "id": "1234567890"
+            }
+        }
+    ],
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.0"
+}

@@ -34,7 +34,7 @@
                   "size": "Medium",
                   "weight": "Bolder",
                   "color": "Accent",
-                  "text": "Fellow BizTalker,   \n\nI am BizMan the superhero you need for your BizTalk Ops.",
+                  "text": "Fellow BizTalker,   \n\nI am BizMan, the superhero you need for your BizTalk Ops.",
                   "wrap": true
                 }
               ],
@@ -49,8 +49,8 @@
     {
       "type": "Action.Submit",
       "id": "action.login",
-      "title": "Log In",
-      "data": "login"
+      "title": "Sign In",
+      "data": "signin"
     },
     {
       "type": "Action.Submit",

@@ -48,8 +48,8 @@
     {
       "type": "Action.Submit",
       "id": "ActionSubmit.Login",
-      "title": "Log In",
-      "data": "login"
+      "title": "Sign In",
+      "data": "signin"
     },
     {
       "type": "Action.ShowCard",

@@ -9,6 +9,7 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using BizTalkAdminBot.Helpers;
 using BizTalkAdminBot.Models;
 #endregion
@@ -75,7 +76,6 @@ namespace BizTalkAdminBot
                         {
                             var reply = turnContext.Activity.CreateReply();
                             string welcomeCardJson = GenericHelpers.ReadTextFromFile(@".\wwwroot\Resources\AdaptiveCards\WelcomeMessage.json");
-                            welcomeCardJson = welcomeCardJson.Replace("http://localhost{0}", Constants.BizManImage);
                             reply.Attachments = new List<Attachment>()
                             {
                                 DialogHelpers.CreateAdaptiveCardAttachment(welcomeCardJson)
@@ -102,6 +102,7 @@ namespace BizTalkAdminBot
             var dc = await _dialogs.CreateContextAsync(turnContext, cancellationToken);
 
             string command = DialogHelpers.ParseCommand(turnContext.Activity);
+            Activity reply = null;
 
             // Based upon the parse command different logic will be called to construct the reply activities
             switch(command)
@@ -116,14 +117,20 @@ namespace BizTalkAdminBot
                     await botAdapter.SignOutUserAsync(turnContext, Constants.OAuthConnectionName, cancellationToken:cancellationToken);
 
                     //Tell the user that they are signed out
-                    await turnContext.SendActivityAsync($"You are now Signed out. /n Please close the Broweser or type anything to begin again");
+                    reply = turnContext.Activity.CreateReply();
+                    string signOutMessageJson = GenericHelpers.ReadTextFromFile(@".\wwwroot\Resources\AdaptiveCards\SignOutMessage.json");
+                    reply.Attachments = new List<Attachment>()
+                    {
+                        DialogHelpers.CreateAdaptiveCardAttachment(signOutMessageJson)
+                    };
+                    await turnContext.SendActivityAsync(reply, cancellationToken);
                 
                     //end the dialog as the user is signed out. A new login will begin the new dialog.
                     await dc.EndDialogAsync(Constants.RootDialogName , cancellationToken);
                     break;
 
                 case "help": 
-                    var reply = turnContext.Activity.CreateReply();
+                    reply = turnContext.Activity.CreateReply();
                     string helpMessgeJson = GenericHelpers.ReadTextFromFile(@".\wwwroot\Resources\AdaptiveCards\HelpMessage.json");
                     reply.Attachments = new List<Attachment>()
                     {
@@ -175,6 +182,7 @@ namespace BizTalkAdminBot
         /// <returns></returns>
         private async Task<DialogTurnResult> ProcessStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            //This works with only the ImBack type events sent by the emulator
             if(stepContext.Result != null)
             {
                 var tokenResponse = stepContext.Result as TokenResponse;
@@ -183,32 +191,65 @@ namespace BizTalkAdminBot
                 {
                     var parts = _accessors.CommandState.GetAsync(stepContext.Context, () => string.Empty, cancellationToken: cancellationToken).Result.Split(' ');
                     string command = parts[0].ToLowerInvariant();
+                    Activity reply = null;
 
-                    if(command == "getallapplications")
+                    switch(command)
                     {
-                        string sampleAppListJson = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplicationsResponse.json");
-                        List<BizTalkApplication> bizTalkApplications= JsonConvert.DeserializeObject<List<BizTalkApplication>>(sampleAppListJson);
-                        var reply = stepContext.Context.Activity.CreateReply();
-                        string getAppJson = AdaptiveCardsHelper.CreateGetApplicationsAdaptiveCard(bizTalkApplications);
-                        reply.Attachments = new List<Attachment>()
-                        {
-                            DialogHelpers.CreateAdaptiveCardAttachment(getAppJson)
-                        };
+                        case "getallapplications":
+                            string sampleAppListJson = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplicationsResponse.json");
+                            List<BizTalkApplication> bizTalkApplications= JsonConvert.DeserializeObject<List<BizTalkApplication>>(sampleAppListJson);
+                            reply = stepContext.Context.Activity.CreateReply();
+                            string getAppJson = AdaptiveCardsHelper.CreateGetApplicationsAdaptiveCard(bizTalkApplications);
+                            getAppJson = getAppJson.Replace("http://localhost/{0}", string.Format(Constants.CardImageUrl, Constants.BizManImage));
+                            reply.Attachments = new List<Attachment>()
+                            {
+                                DialogHelpers.CreateAdaptiveCardAttachment(getAppJson)
+                            };
+                            
+                            await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
+                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateOperationsReply(stepContext), cancellationToken: cancellationToken);
+                            break;
+
+                        case "feedback":
+                            string feedBackCardJson = GenericHelpers.ReadTextFromFile(@".\wwwroot\Resources\AdaptiveCards\FeedBackCard.json");
+                            reply = stepContext.Context.Activity.CreateReply();
+                            reply.Attachments = new List<Attachment>()
+                            {
+                                DialogHelpers.CreateAdaptiveCardAttachment(feedBackCardJson)
+                            };
+                            await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
+                            //await stepContext.Context.SendActivityAsync(DialogHelpers.CreateOperationsReply(stepContext), cancellationToken: cancellationToken);
+                            break;
                         
-                        await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
-                        await stepContext.Context.SendActivityAsync(DialogHelpers.CreateOperationsReply(stepContext), cancellationToken: cancellationToken);
-
-                    }
-                    else
-                    {
-                        await stepContext.Context.SendActivityAsync(DialogHelpers.CreateOperationsReply(stepContext), cancellationToken);
+                        default:
+                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateOperationsReply(stepContext), cancellationToken);
+                            break;
                     }
                 }
             }
             else
             {
-                await stepContext.Context.SendActivityAsync("We couldn't log you in. Please try again later");
+                var token = JToken.Parse(stepContext.Context.Activity.ChannelData.ToString());
+                if(System.Convert.ToBoolean(token["postback"].Value<string>()))
+                {
+                  await stepContext.Context.SendActivityAsync("Thank You for the feedback.");
+                  await stepContext.Context.SendActivityAsync(DialogHelpers.CreateOperationsReply(stepContext), cancellationToken: cancellationToken);
+
+                }
+                else
+                {
+                    await stepContext.Context.SendActivityAsync("We couldn't Sign you in. Please try again later");
+
+                }
+                
+
             }
+
+            
+            // else
+            // {
+            //     await stepContext.Context.SendActivityAsync("We couldn't Sign you in. Please try again later");
+            // }
             await _accessors.CommandState.DeleteAsync(stepContext.Context, cancellationToken);
             return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
         }

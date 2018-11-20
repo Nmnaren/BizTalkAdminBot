@@ -188,18 +188,18 @@ namespace BizTalkAdminBot.Helpers
             adaptiveCard.Body.Add(applicationColumnSet);
 
 
-            List<AdaptiveAction> cardActions = new List<AdaptiveAction>()
-            {
-                new AdaptiveOpenUrlAction()
-                {
-                    Id = "bizTalkResources",
-                    Title = "BizTalkResources",
-                    Url = new Uri("https://social.technet.microsoft.com/wiki/contents/articles/2240.biztalk-server-resources-on-the-technet-wiki.aspx")
-                }
+            // List<AdaptiveAction> cardActions = new List<AdaptiveAction>()
+            // {
+            //     new AdaptiveOpenUrlAction()
+            //     {
+            //         Id = "bizTalkResources",
+            //         Title = "BizTalkResources",
+            //         Url = new Uri("https://social.technet.microsoft.com/wiki/contents/articles/2240.biztalk-server-resources-on-the-technet-wiki.aspx")
+            //     }
 
-            };
+            // };
 
-            adaptiveCard.Actions = cardActions;
+            // adaptiveCard.Actions = cardActions;
 
             string adaptiveCardJson = adaptiveCard.ToJson();
 

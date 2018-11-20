@@ -39,15 +39,22 @@ namespace BizTalkAdminBot.Helpers
             return adaptiveCard;
         }
 
+        /// <summary>
+        /// Method to Create the Sign In Card Which will be rendered to user if they are not signed in
+        /// </summary>
+        /// <param name="connectionName">Connection Name used in BOt Channels Registration</param>
+        /// <returns>OAuthPrompt object which is rendered as a Sign In Card on Channel</returns>
         public static OAuthPrompt OAuthPrompt(string connectionName)
         {
             var oauthPrompt = new OAuthPrompt(
                 Constants.LoginPromtName, new OAuthPromptSettings
                 {
+
                     ConnectionName = connectionName ?? throw new ArgumentNullException("Connection Name cannot be blank."),
                     Text = "Please Sign In",
                     Timeout = 300000,
-                    Title = "SignIn"    
+                    Title = "Sign In"   
+
                 }
 
             );
@@ -55,6 +62,12 @@ namespace BizTalkAdminBot.Helpers
             return oauthPrompt;
             
         }
+
+        /// <summary>
+        /// Method to Parse commands when inpout is more complex than text
+        /// </summary>
+        /// <param name="activity"></param>
+        /// <returns></returns>
         public static string ParseCommand(Activity activity)
         {
             string command = string.Empty;
@@ -65,13 +78,19 @@ namespace BizTalkAdminBot.Helpers
             }
             else
             {
-                string compositeCommand = activity.Value.ToString();
-                JToken token = JToken.Parse(compositeCommand);
-                command = token["operationInputChoice"].Value<string>();
+                // string compositeCommand = activity.Value.ToString();
+                // JToken token = JToken.Parse(compositeCommand);
+                // command = token["operationInputChoice"].Value<string>();
+                command = "feedback";
             }
             return command;
         }
 
+        /// <summary>
+        /// Method To Create Reply which sends out Operations
+        /// </summary>
+        /// <param name="stepContext">Waterfall step context</param>
+        /// <returns>Actvity Object which contains operations adaptive card</returns>
         public static Activity CreateOperationsReply(WaterfallStepContext stepContext)
         {
             var reply = stepContext.Context.Activity.CreateReply();

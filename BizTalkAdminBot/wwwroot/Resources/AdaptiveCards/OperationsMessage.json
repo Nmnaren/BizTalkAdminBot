@@ -71,7 +71,20 @@
           "id": "bc3bd761-e914-4aae-8655-db34b3c31184",
           "title": "Get All Applications",
           "data": "getallapplications"
+      },
+      {
+        "type": "Action.Submit",
+        "id": "172d4149-1e7f-4120-9497-0218e36b3dbf",
+        "title": "Provide FeedBack",
+        "data": "feedback"
+      },
+      {
+        "type": "Action.Submit",
+        "id": "bc3bd761-e914-4aae-8655-db34b3c31182",
+        "title": "Sign Out",
+        "data": "signout"
       }
+      
   ],
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
   "version": "1.0"
