@@ -197,7 +197,7 @@ namespace BizTalkAdminBot
                     {
                         case "getallapplications":
                             string sampleAppListJson = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplicationsResponse.json");
-                            List<BizTalkApplication> bizTalkApplications= JsonConvert.DeserializeObject<List<BizTalkApplication>>(sampleAppListJson);
+                            List<Application> bizTalkApplications= JsonConvert.DeserializeObject<List<Application>>(sampleAppListJson);
                             reply = stepContext.Context.Activity.CreateReply();
                             string getAppJson = AdaptiveCardsHelper.CreateGetApplicationsAdaptiveCard(bizTalkApplications);
                             getAppJson = getAppJson.Replace("http://localhost/{0}", string.Format(Constants.CardImageUrl, Constants.BizManImage));

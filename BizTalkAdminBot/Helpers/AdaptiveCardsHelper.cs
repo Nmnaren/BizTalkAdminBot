@@ -14,7 +14,7 @@ namespace BizTalkAdminBot.Helpers
     /// </summary>
     public class AdaptiveCardsHelper
     {
-        public static string CreateGetApplicationsAdaptiveCard(List<BizTalkApplication> applicationList)
+        public static string CreateGetApplicationsAdaptiveCard(List<Application> applicationList)
         {
             
             #region TopLevelColumn
@@ -118,7 +118,7 @@ namespace BizTalkAdminBot.Helpers
                 }
             };
 
-            foreach (BizTalkApplication app in applicationList)
+            foreach (Application app in applicationList)
             {
                 string name = app.Name;
                 string status = app.Status;

@@ -11,7 +11,7 @@
     /// <summary>
     /// Model which signifies a BizTalk application.
     /// </summary>
-    public class BizTalkApplication
+    public class Application
     {
         /// <summary>
         /// Name of the BizTalk application

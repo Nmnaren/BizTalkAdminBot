@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace BizTalkAdminBot.Models
 {
-    public class BizTalkHost
+    public class Host
     {
         public string Name { get; set; }
         public bool IsDefault { get; set; }

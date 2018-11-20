@@ -6,25 +6,6 @@ using System.Threading.Tasks;
 namespace BizTalkAdminBot.Models
 {
 
-    public class Schedule
-    {
-        public bool ServiceWindowEnabled { get; set; }
-        public DateTime FromTime { get; set; }
-        public DateTime ToTime { get; set; }
-    }
-
-    public class PrimaryTransport
-    {
-        public string Address { get; set; }
-        public string TransportType { get; set; }
-        public string TransportTypeData { get; set; }
-        public string SendHandler { get; set; }
-        public int RetryCount { get; set; }
-        public int RetryInterval { get; set; }
-        public bool OrderedDelivery { get; set; }
-        public Schedule Schedule { get; set; }
-    }
-
     public class Schedule2
     {
         public bool ServiceWindowEnabled { get; set; }

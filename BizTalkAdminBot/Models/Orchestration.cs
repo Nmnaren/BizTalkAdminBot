@@ -14,7 +14,7 @@ namespace BizTalkAdminBot.Models
         public string PortType { get; set; }
     }
 
-    public class Tracking
+    public class OrchestrationTracking
     {
         public bool ServiceStartEnd { get; set; }
         public bool MessageSendReceive { get; set; }
@@ -23,9 +23,11 @@ namespace BizTalkAdminBot.Models
         public bool OrchestartionEvents { get; set; }
         public bool TrackPropertiesForIncomingMessages { get; set; }
         public bool TrackPropertiesForOutgoingMessages { get; set; }
+        public Body Body { get; set; }
+        public Property Property { get; set; }
     }
 
-    public class BizTalkOrchestration
+    public class Orchestration
     {
         public string FullName { get; set; }
         public string AssemblyName { get; set; }
@@ -38,6 +40,6 @@ namespace BizTalkAdminBot.Models
         public List<object> UsedRoles { get; set; }
         public List<object> ImplementedRoles { get; set; }
         public List<object> InvokedOrchestrations { get; set; }
-        public Tracking Tracking { get; set; }
+        public OrchestrationTracking Tracking { get; set; }
     }
 }
