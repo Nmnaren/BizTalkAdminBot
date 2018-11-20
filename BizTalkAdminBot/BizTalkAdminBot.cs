@@ -196,7 +196,7 @@ namespace BizTalkAdminBot
                     switch(command)
                     {
                         case "getallapplications":
-                            string sampleAppListJson = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplicationsResponse.json");
+                            string sampleAppListJson = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplications.json");
                             List<Application> bizTalkApplications= JsonConvert.DeserializeObject<List<Application>>(sampleAppListJson);
                             reply = stepContext.Context.Activity.CreateReply();
                             string getAppJson = AdaptiveCardsHelper.CreateGetApplicationsAdaptiveCard(bizTalkApplications);
@@ -204,6 +204,21 @@ namespace BizTalkAdminBot
                             reply.Attachments = new List<Attachment>()
                             {
                                 DialogHelpers.CreateAdaptiveCardAttachment(getAppJson)
+                            };
+                            
+                            await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
+                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateOperationsReply(stepContext), cancellationToken: cancellationToken);
+                            break;
+
+                        case "getorchbyapp":
+                            string sampleOrchList = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetOrchestrations.json");
+                            List<Orchestration> orchestrations= JsonConvert.DeserializeObject<List<Orchestration>>(sampleOrchList);
+                            reply = stepContext.Context.Activity.CreateReply();
+                            string getOrchJson = AdaptiveCardsHelper.CreateGetOrchestrationsAdaptiveCard(orchestrations);
+                            getOrchJson = getOrchJson.Replace("http://localhost/{0}", string.Format(Constants.CardImageUrl, Constants.BizManImage));
+                            reply.Attachments = new List<Attachment>()
+                            {
+                                DialogHelpers.CreateAdaptiveCardAttachment(getOrchJson)
                             };
                             
                             await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
