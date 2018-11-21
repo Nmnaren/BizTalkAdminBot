@@ -194,10 +194,15 @@ namespace BizTalkAdminBot
                     switch(command)
                     {
                         case "getallapplications":
-                            string sampleAppListJson = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplications.json");
-                            List<Application> bizTalkApplications= JsonConvert.DeserializeObject<List<Application>>(sampleAppListJson);
+                            BizTalkOperationApiHelper apiHelper = new BizTalkOperationApiHelper("getallapplications");
+
+                            List<Application> applications = await apiHelper.GetApplicationsAsync();
+
+
+                            //string sampleAppListJson = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplications.json");
+                            //List<Application> bizTalkApplications= JsonConvert.DeserializeObject<List<Application>>(sampleAppListJson);
                             reply = stepContext.Context.Activity.CreateReply();
-                            string getAppJson = AdaptiveCardsHelper.CreateGetApplicationsAdaptiveCard(bizTalkApplications);
+                            string getAppJson = AdaptiveCardsHelper.CreateGetApplicationsAdaptiveCard(applications);
                             getAppJson = getAppJson.Replace("http://localhost/{0}", string.Format(Constants.CardImageUrl, Constants.BizManImage));
                             reply.Attachments = new List<Attachment>()
                             {
@@ -260,6 +265,9 @@ namespace BizTalkAdminBot
                     switch(command)
                     {
                         case "getorchbyapp":
+                            
+                            //Experiment with the BOt Accessors
+                            
                             string sampleOrchList = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetOrchestrations.json");
                             List<Orchestration> orchestrations= JsonConvert.DeserializeObject<List<Orchestration>>(sampleOrchList);
                             reply = stepContext.Context.Activity.CreateReply();
