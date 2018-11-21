@@ -63,26 +63,22 @@ namespace BizTalkAdminBot.Helpers
             
         }
 
+      
         /// <summary>
-        /// Method to Parse commands when inpout is more complex than text
+        /// Parses the Value Token from Activty to decide upon the command.
         /// </summary>
-        /// <param name="activity"></param>
-        /// <returns></returns>
-        public static string ParseCommand(Activity activity)
+        /// <param name="jToken">Value Token in the Activty</param>
+        /// <returns>parse Command as string</returns>
+        public static string ParseCommand(JToken jToken)
         {
             string command = string.Empty;
 
-            if(activity.Text !=null)
+            if(jToken != null)
             {
-                command = activity.Text.ToLowerInvariant();
+                command = jToken["command"].Value<string>();
+
             }
-            else
-            {
-                // string compositeCommand = activity.Value.ToString();
-                // JToken token = JToken.Parse(compositeCommand);
-                // command = token["operationInputChoice"].Value<string>();
-                command = "feedback";
-            }
+
             return command;
         }
 

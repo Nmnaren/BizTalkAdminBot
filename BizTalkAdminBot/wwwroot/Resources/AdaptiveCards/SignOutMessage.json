@@ -49,13 +49,7 @@
             "id": "f55c85c7-2337-413d-bf51-aed08f3abf0c",
             "title": "Sign In",
             "data": "signin"
-        },
-        {
-            "type": "Action.Submit",
-            "id": "172d4149-1e7f-4120-9497-0218e36b3dbf",
-            "title": "Provide FeedBack",
-            "data": "feedback"
-          }
+        }
     ],
     "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
     "version": "1.0"

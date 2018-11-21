@@ -101,7 +101,7 @@ namespace BizTalkAdminBot
             //Create the dialog context for the current turn
             var dc = await _dialogs.CreateContextAsync(turnContext, cancellationToken);
 
-            string command = DialogHelpers.ParseCommand(turnContext.Activity);
+            string command = turnContext.Activity.Text;
             Activity reply = null;
 
             // Based upon the parse command different logic will be called to construct the reply activities
@@ -160,13 +160,11 @@ namespace BizTalkAdminBot
         private async Task<DialogTurnResult> PromptStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             
-            string command = DialogHelpers.ParseCommand(stepContext.Context.Activity);
-
             //Verify if the message in the current turn is not a magic code.
             if(stepContext.Context.Activity.Type == ActivityTypes.Message &&
-                !Regex.IsMatch(command, @"(\d{6})"))
+                !Regex.IsMatch(stepContext.Context.Activity.Text, @"(\d{6})"))
                 {
-                    await _accessors.CommandState.SetAsync(stepContext.Context, command, cancellationToken: cancellationToken);
+                    await _accessors.CommandState.SetAsync(stepContext.Context, stepContext.Context.Activity.Text, cancellationToken: cancellationToken);
                     await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
                 }
                 return await stepContext.BeginDialogAsync(Constants.LoginPromtName, cancellationToken:cancellationToken);
@@ -211,18 +209,24 @@ namespace BizTalkAdminBot
                             break;
 
                         case "getorchbyapp":
-                            string sampleOrchList = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetOrchestrations.json");
-                            List<Orchestration> orchestrations= JsonConvert.DeserializeObject<List<Orchestration>>(sampleOrchList);
+                            
+                            string appListJson = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplications.json");
+                            
+                            List<Application> bizTalkApps = JsonConvert.DeserializeObject<List<Application>>(appListJson);
                             reply = stepContext.Context.Activity.CreateReply();
-                            string getOrchJson = AdaptiveCardsHelper.CreateGetOrchestrationsAdaptiveCard(orchestrations);
-                            getOrchJson = getOrchJson.Replace("http://localhost/{0}", string.Format(Constants.CardImageUrl, Constants.BizManImage));
+                            string applist = AdaptiveCardsHelper.CreateSelectApplicationListAdaptiveCard(bizTalkApps);
+                            applist = applist.Replace("http://localhost/{0}", string.Format(Constants.CardImageUrl, Constants.BizManImage));
+
+
+                            //string getOrchJson = AdaptiveCardsHelper.CreateGetOrchestrationsAdaptiveCard(orchestrations, "ConfigureHTTPReceiveUsingBTDF");
+                            //getOrchJson = getOrchJson.Replace("http://localhost/{0}", string.Format(Constants.CardImageUrl, Constants.BizManImage));
                             reply.Attachments = new List<Attachment>()
                             {
-                                DialogHelpers.CreateAdaptiveCardAttachment(getOrchJson)
+                                DialogHelpers.CreateAdaptiveCardAttachment(applist)
                             };
                             
                             await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
-                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateOperationsReply(stepContext), cancellationToken: cancellationToken);
+                            //await stepContext.Context.SendActivityAsync(DialogHelpers.CreateOperationsReply(stepContext), cancellationToken: cancellationToken);
                             break;
 
                         case "feedback":
@@ -247,8 +251,39 @@ namespace BizTalkAdminBot
                 var token = JToken.Parse(stepContext.Context.Activity.ChannelData.ToString());
                 if(System.Convert.ToBoolean(token["postback"].Value<string>()))
                 {
-                  await stepContext.Context.SendActivityAsync("Thank You for the feedback.");
-                  await stepContext.Context.SendActivityAsync(DialogHelpers.CreateOperationsReply(stepContext), cancellationToken: cancellationToken);
+                    JToken commandToken = JToken.Parse(stepContext.Context.Activity.Value.ToString());
+
+                    string command = DialogHelpers.ParseCommand(commandToken);
+
+                    Activity reply = null;
+
+                    switch(command)
+                    {
+                        case "getorchbyapp":
+                            string sampleOrchList = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetOrchestrations.json");
+                            List<Orchestration> orchestrations= JsonConvert.DeserializeObject<List<Orchestration>>(sampleOrchList);
+                            reply = stepContext.Context.Activity.CreateReply();
+                            string getOrchJson = AdaptiveCardsHelper.CreateGetOrchestrationsAdaptiveCard(orchestrations, "ConfigureHTTPReceiveUsingBTDF");
+                            getOrchJson = getOrchJson.Replace("http://localhost/{0}", string.Format(Constants.CardImageUrl, Constants.BizManImage));
+                            reply.Attachments = new List<Attachment>()
+                            {
+                                DialogHelpers.CreateAdaptiveCardAttachment(getOrchJson)
+                            };
+                            await stepContext.Context.SendActivityAsync(reply, cancellationToken);
+                            break;
+
+                        case "feedback":
+                            await stepContext.Context.SendActivityAsync("Thank You for the feedback.");
+                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateOperationsReply(stepContext), cancellationToken: cancellationToken);
+                            break;
+
+                        default:
+                            await stepContext.Context.SendActivityAsync("Unable To Perform the task");
+                            break;
+                            
+                    }
+                    await stepContext.Context.SendActivityAsync(DialogHelpers.CreateOperationsReply(stepContext), cancellationToken: cancellationToken);
+                  
 
                 }
                 else

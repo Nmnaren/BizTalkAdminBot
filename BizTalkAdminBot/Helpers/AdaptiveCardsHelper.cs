@@ -127,193 +127,134 @@ namespace BizTalkAdminBot.Helpers
             return adaptiveCardJson;
         }
 
-        public static string CreateGetOrchestrationsAdaptiveCard(List<Orchestration> orchestrations)
+        public static string CreateGetOrchestrationsAdaptiveCard(List<Orchestration> orchestrations, string appName)
         {
             #region TopLevelColumn
             AdaptiveColumnSet topLevelColumnSet = CreateTopLevelColumnSet();
             #endregion
 
-            #region ApplicationLevelColumnSet
+            #region Container
 
-            AdaptiveColumnSet orchestrationColumnSet = new AdaptiveColumnSet()
+            AdaptiveContainer container = new AdaptiveContainer()
             {
-                Id = "orchestrationColumnSet",
-                Separator = true,
+                Id = "container",
                 Spacing = AdaptiveSpacing.Default,
-
-            };
-
-            List<AdaptiveElement> orchestrationTextBlocks = new List<AdaptiveElement>()
-            {
-                new AdaptiveTextBlock()
+                Separator = true,
+                Items = new List<AdaptiveElement>()
                 {
-                    Id = "orchestrationNameStatic",
-                    HorizontalAlignment = AdaptiveHorizontalAlignment.Left,
-                    Separator= true,
-                    Size = AdaptiveTextSize.Default,
-                    Text = "Orchestration Name",
-                    Color = AdaptiveTextColor.Default,
-                    Weight = AdaptiveTextWeight.Bolder,
-                }
-            };
+                    new AdaptiveTextBlock()
+                    {
+                        Id = "OrchestrationByAppName",
+                        Color = AdaptiveTextColor.Default,
+                        IsSubtle = true,
+                        Separator = true,
+                        Spacing = AdaptiveSpacing.Default,
+                        Text = string.Format("Orchestrations in {0}", appName)
 
-            List<AdaptiveElement> statusTextBlocks = new List<AdaptiveElement>()
-            {
-                new AdaptiveTextBlock()
-                {
-                    Id = "statusStatic",
-                    HorizontalAlignment = AdaptiveHorizontalAlignment.Right,
-                    Separator = true,
-                    Size = AdaptiveTextSize.Default,
-                    Text = "Status",
-                    Color = AdaptiveTextColor.Default,
-                    Weight = AdaptiveTextWeight.Bolder
+                    }
                 }
-            };
 
-            List<AdaptiveElement> applicationNameTextBlocks = new List<AdaptiveElement>()
-            {
-                new AdaptiveTextBlock()
-                {
-                    Id = "applicationNameStatic",
-                    HorizontalAlignment = AdaptiveHorizontalAlignment.Left,
-                    Separator= true,
-                    Size = AdaptiveTextSize.Default,
-                    Text = "Application",
-                    Color = AdaptiveTextColor.Default,
-                    Weight = AdaptiveTextWeight.Bolder,
-                }
             };
+            
+            #endregion
 
-            List<AdaptiveElement> hostNameTextBlocks = new List<AdaptiveElement>()
-            {
-                new AdaptiveTextBlock()
-                {
-                    Id = "hostNameStatic",
-                    HorizontalAlignment = AdaptiveHorizontalAlignment.Left,
-                    Separator= true,
-                    Size = AdaptiveTextSize.Default,
-                    Text = "Host",
-                    Color = AdaptiveTextColor.Default,
-                    Weight = AdaptiveTextWeight.Bolder,
-                }
-            };
+            #region FactSet
 
+            
             foreach(Orchestration orchestration in orchestrations)
             {
                 string name = orchestration.FullName;
-                string status = orchestration.Status;
-                string appName = orchestration.ApplicationName;
-                string host = orchestration.Host;
+                name = name.Substring(orchestration.AssemblyName.Length + 1);
 
-                AdaptiveTextBlock orchestrationTextBlock = new AdaptiveTextBlock()
+                AdaptiveFactSet orchFactSet = new AdaptiveFactSet()
                 {
                     Id = name,
-                    HorizontalAlignment = AdaptiveHorizontalAlignment.Left,
                     Separator = true,
-                    Size = AdaptiveTextSize.Default,
-                    Text = name,
-                    Color = AdaptiveTextColor.Default,
-                    Weight = AdaptiveTextWeight.Default
+                    Facts = new List<AdaptiveFact>()
+                    {
+                        new AdaptiveFact()
+                        {
+                            Title = "Name",
+                            Value = name,
+                        },
+                        new AdaptiveFact()
+                        {
+                            Title = "Host",
+                            Value = orchestration.Host
+                        },
 
+                        new AdaptiveFact()
+                        {
+                            Title = "Status",
+                            Value = orchestration.Status
+                        }
+                    }
                 };
-
-                AdaptiveTextBlock applicationNameTextBlock = new AdaptiveTextBlock()
-                {
-                    //GUID is used to make the ID unique
-                    Id = string.Format("{0}_{1}", appName, System.Guid.NewGuid().ToString()),
-                    HorizontalAlignment = AdaptiveHorizontalAlignment.Left,
-                    Separator = true,
-                    Size = AdaptiveTextSize.Default,
-                    Text = appName,
-                    Color = AdaptiveTextColor.Default,
-                    Weight = AdaptiveTextWeight.Default
-
-                };
-
-                AdaptiveTextBlock hostNameTextBlock = new AdaptiveTextBlock()
-                {
-                    //GUID is used to make the ID unique
-                    Id = string.Format("{0}_{1}", host, System.Guid.NewGuid().ToString()),
-                    HorizontalAlignment = AdaptiveHorizontalAlignment.Left,
-                    Separator = true,
-                    Size = AdaptiveTextSize.Default,
-                    Text = host,
-                    Color = AdaptiveTextColor.Default,
-                    Weight = AdaptiveTextWeight.Default
-
-                };
-
-                AdaptiveTextBlock statusTextBlock = new AdaptiveTextBlock()
-                {
-                    //GUID is used to make the ID unique
-                    Id = string.Format("{0}_{1}", status, System.Guid.NewGuid().ToString()),
-                    HorizontalAlignment = AdaptiveHorizontalAlignment.Left,
-                    Separator = true,
-                    Size = AdaptiveTextSize.Default,
-                    Text = host,
-                    Color = AdaptiveTextColor.Default,
-                    Weight = AdaptiveTextWeight.Default
-
-                };
-
-                orchestrationTextBlocks.Add(orchestrationTextBlock);
-                applicationNameTextBlocks.Add(applicationNameTextBlock);
-                hostNameTextBlocks.Add(hostNameTextBlock);
-                statusTextBlocks.Add(statusTextBlock);
+                container.Items.Add(orchFactSet);
+                
             }
-
-            AdaptiveColumn orchestrationCoulmn = new AdaptiveColumn()
-            {
-                Id = "orchestrationListColumn",
-                Items = orchestrationTextBlocks,
-                Separator = true,
-                Spacing = AdaptiveSpacing.Default,
-                Width = AdaptiveColumnWidth.Stretch
-
-            };
-            AdaptiveColumn applicationCoulmn = new AdaptiveColumn()
-            {
-                Id = "applicationListColumn",
-                Items = applicationNameTextBlocks,
-                Separator = true,
-                Spacing = AdaptiveSpacing.Default,
-                Width = AdaptiveColumnWidth.Stretch
-
-            };
-
-            AdaptiveColumn hostCoulmn = new AdaptiveColumn()
-            {
-                Id = "hostListColumn",
-                Items = hostNameTextBlocks,
-                Separator = true,
-                Spacing = AdaptiveSpacing.Default,
-                Width = AdaptiveColumnWidth.Stretch
-
-            };
-
-            AdaptiveColumn statusCoulmn = new AdaptiveColumn()
-            {
-                Id = "statusListColumn",
-                Items = statusTextBlocks,
-                Separator = true,
-                Spacing = AdaptiveSpacing.Default,
-                Width = AdaptiveColumnWidth.Stretch
-
-            };
-
-            orchestrationColumnSet.Columns = new List<AdaptiveColumn>()
-            {
-                orchestrationCoulmn,
-                applicationCoulmn,
-                hostCoulmn,
-                statusCoulmn
-            };
             #endregion
+
 
             AdaptiveCard adaptiveCard = new AdaptiveCard();
             adaptiveCard.Body.Add(topLevelColumnSet);
-            adaptiveCard.Body.Add(orchestrationColumnSet);
+            adaptiveCard.Body.Add(container);
+            string adaptiveCardJson = adaptiveCard.ToJson();
+            return adaptiveCardJson;
+
+        }
+
+        /// <summary>
+        /// Create the application list drop down
+        /// </summary>
+        /// <param name="applications"></param>
+        /// <returns></returns>
+        public static string CreateSelectApplicationListAdaptiveCard(List<Application> applications)
+        {
+            #region TopLevelColumn
+            AdaptiveColumnSet topLevelColumnSet = CreateTopLevelColumnSet();
+            #endregion
+
+
+            #region ChoiceList
+            
+            AdaptiveChoiceSetInput choiceSetInput = new AdaptiveChoiceSetInput()
+            {
+                Id = "applicationChoiceSet",
+                Separator = true,
+                Style = AdaptiveChoiceInputStyle.Compact,
+                                
+            };
+
+            foreach(Application app in  applications)
+            {
+                string name = app.Name;
+
+                AdaptiveChoice choice = new AdaptiveChoice()
+                {
+                    Title = name,
+                    Value = name
+                };
+
+                choiceSetInput.Choices.Add(choice);
+                
+            }
+            AdaptiveCard adaptiveCard = new AdaptiveCard();
+            adaptiveCard.Body.Add(topLevelColumnSet);
+            adaptiveCard.Body.Add(new AdaptiveTextBlock(){Id = "header", Text = "Please Select an Application", Wrap = true, Color = AdaptiveTextColor.Accent, IsSubtle = true});
+            adaptiveCard.Body.Add(choiceSetInput);
+            adaptiveCard.Actions = new List<AdaptiveAction>()
+            {
+                new AdaptiveSubmitAction()
+                {
+                    Id = "submit",
+                    Title = "Submit",
+                    DataJson = "{\"command\": \"getorchbyapp\"}"
+                }
+            };
+            
+            #endregion
+
             string adaptiveCardJson = adaptiveCard.ToJson();
             return adaptiveCardJson;
 
