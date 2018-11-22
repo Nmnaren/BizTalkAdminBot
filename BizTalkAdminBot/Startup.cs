@@ -152,6 +152,9 @@ namespace BizTalkAdminBot
                 {
                     CommandState = userState.CreateProperty<string>(BizTalkAdminBotAccessors.CommandStateName),
                     ApplicationState = userState.CreateProperty<List<Application>>(BizTalkAdminBotAccessors.ApplicationStateName),
+                    HostState = userState.CreateProperty<List<Host>>(BizTalkAdminBotAccessors.HostStateName),
+                    OrchestrationState = userState.CreateProperty<List<Orchestration>>(BizTalkAdminBotAccessors.OrchestrationStateName),
+                    SendPortState = userState.CreateProperty<List<SendPort>>(BizTalkAdminBotAccessors.SendPortStateName),
                     ConversationDialogState = userState.CreateProperty<DialogState>(BizTalkAdminBotAccessors.DialogStateName),
                 };
 

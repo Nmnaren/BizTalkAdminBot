@@ -28,11 +28,22 @@ namespace BizTalkAdminBot
 
         public static readonly string ApplicationStateName = $"{nameof(BizTalkAdminBotAccessors)}.ApplicationState";
 
+        public static readonly string OrchestrationStateName = $"{nameof(BizTalkAdminBotAccessors)}.OrchestrationState";
+        public static readonly string HostStateName = $"{nameof(BizTalkAdminBotAccessors)}.HostState";
+
+        public static readonly string SendPortStateName = $"{nameof(BizTalkAdminBotAccessors)}.SendPortState";
+
         public IStatePropertyAccessor<DialogState> ConversationDialogState { get; set; }
 
         public IStatePropertyAccessor<string> CommandState { get; set; }
 
-        public IStatePropertyAccessor<List<Application>> ApplicationState {get; set;}
+        public IStatePropertyAccessor<List<Application>> ApplicationState {get; set; }
+
+        public IStatePropertyAccessor<List<Orchestration>> OrchestrationState {get; set; }
+        
+        public IStatePropertyAccessor<List<Host>> HostState {get; set; }
+
+        public IStatePropertyAccessor<List<SendPort>> SendPortState {get; set; } 
 
         public ConversationState ConversationState { get; }
 

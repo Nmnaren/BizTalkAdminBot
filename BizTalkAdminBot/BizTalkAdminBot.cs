@@ -128,6 +128,9 @@ namespace BizTalkAdminBot
                     //end the dialog as the user is signed out. A new login will begin the new dialog.
                     await dc.EndDialogAsync(Constants.RootDialogName , cancellationToken);
                     await _accessors.ApplicationState.DeleteAsync(turnContext, cancellationToken: cancellationToken);
+                    await _accessors.HostState.DeleteAsync(turnContext, cancellationToken);
+                    await _accessors.OrchestrationState.DeleteAsync(turnContext, cancellationToken);
+                    await _accessors.SendPortState.DeleteAsync(turnContext, cancellationToken);
                     await _accessors.UserState.SaveChangesAsync(turnContext, cancellationToken: cancellationToken);
                     break;
 
@@ -241,6 +244,10 @@ namespace BizTalkAdminBot
                         case "gethosts":
                             string hostList = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetHosts.json");
                             List<Host> hosts = JsonConvert.DeserializeObject<List<Host>>(hostList);
+
+                            await _accessors.HostState.SetAsync(stepContext.Context, hosts, cancellationToken);
+                            await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
+
                             adaptiveCardData = AdaptiveCardsHelper.CreateGetHostsAdaptiveCard(hosts);
 
                             await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
