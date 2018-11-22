@@ -11,7 +11,17 @@ namespace BizTalkAdminBot.Models
         public bool OrchestartionEvents { get; set; }
         public bool TrackPropertiesForIncomingMessages { get; set; }
         public bool TrackPropertiesForOutgoingMessages { get; set; }
+
+        /// <summary>
+        /// Only Available for Send Ports.Do Not Use With Orchestrations
+        /// </summary>
+        /// <value></value>
         public Body Body { get; set; }
+        
+        /// <summary>
+        /// Only Available for Send Ports.Do Not Use With Orchestrations
+        /// </summary>
+        /// <value></value>
         public Property Property { get; set; }
     }
 }
