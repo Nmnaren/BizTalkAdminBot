@@ -80,6 +80,33 @@ namespace BizTalkAdminBot.Helpers
             return reply;
         }
 
+        /// <summary>
+        /// Create the Reply Activity wih Adaptive Attachment
+        /// </summary>
+        /// <param name="stepContext">Turn Context</param>
+        /// <param name="data">Either the Path to a static Adaptive Card or The Adaptive Card Json String</param>
+        /// <param name="isStaticCard">Is the Card a Static Adaptive Card</param>
+        /// <returns>Activity object containg Adapticve Card Attachment</returns>
+        public static Activity CreateReply(ITurnContext turnContext, string data, bool isStaticCard)
+        {
+            var reply = turnContext.Activity.CreateReply();
+            reply.Attachments = new List<Attachment>();
+
+            //If the adaptive Card is static, we get the card from the path provided in the <param name = "data"> else we pass the data as the card
+
+            if(isStaticCard)
+            {
+                string adaptiveCard = GenericHelpers.ReadTextFromFile(data);
+                reply.Attachments.Add(DialogHelpers.CreateAdaptiveCardAttachment(adaptiveCard));
+            }
+            else
+            {
+                reply.Attachments.Add(DialogHelpers.CreateAdaptiveCardAttachment(data));
+            }
+
+            return reply;
+        }
+
 
     }
 }

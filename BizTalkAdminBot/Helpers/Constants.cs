@@ -54,6 +54,20 @@
         }
         
         /// <summary>
+        /// Enumeration Holding the names of the Static adaptive cards
+        /// </summary>
+        public enum AdaptiveCards
+        {
+            ErrorMessage,
+            FeedBackCard,
+            HelpMessage,
+            OperationsMessage,
+            SignOutMessage,
+            WelcomeMessage
+        }
+
+
+        /// <summary>
         /// Request Used to Post Data to Logic App
         /// </summary>
         public const string PostRequest = "\"operation\": \"{0}\"";
@@ -72,6 +86,8 @@
         /// Path to the BizMan Image
         /// </summary>
         public const string BizManImagePath = @".\wwwroot\Resources\Images\BizMan.png";
+
+        public const string AdaptiveCardPath = @"wwwroot\Resources\AdaptiveCards\{0}.json";
 
     }
 }

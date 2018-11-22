@@ -85,14 +85,9 @@ namespace BizTalkAdminBot
                 {
                     logger.LogError($"Exception caught : {exception}");
 
-                    string errorAdaptiveCardString = GenericHelpers.ReadTextFromFile(@"./wwwroot/Resources/AdaptiveCards/ErrorMessage.json");
-                    var reply = context.Activity.CreateReply();
-                    reply.Attachments = new List<Attachment>()
-                    {
-                        DialogHelpers.CreateAdaptiveCardAttachment(errorAdaptiveCardString)
-                    };
+                    string errorAdaptiveCardString = string.Format(Constants.AdaptiveCardPath, Constants.AdaptiveCards.ErrorMessage.ToString());
                     
-                    await context.SendActivityAsync(reply);
+                    await context.SendActivityAsync(DialogHelpers.CreateReply(context, errorAdaptiveCardString, true));
                 };
 
                 // The Memory Storage used here is for local bot debugging only. When the bot

@@ -75,13 +75,15 @@ namespace BizTalkAdminBot
                     {
                         if(member.Id != turnContext.Activity.Recipient.Id)
                         {
+                            string adaptiveCardPath = string.Format(Constants.AdaptiveCardPath, Constants.AdaptiveCards.WelcomeMessage.ToString());
+                            
                             var reply = turnContext.Activity.CreateReply();
                             string welcomeCardJson = GenericHelpers.ReadTextFromFile(@".\wwwroot\Resources\AdaptiveCards\WelcomeMessage.json");
                             reply.Attachments = new List<Attachment>()
                             {
                                 DialogHelpers.CreateAdaptiveCardAttachment(welcomeCardJson)
                             };
-                            await turnContext.SendActivityAsync(reply, cancellationToken);
+                            await turnContext.SendActivityAsync(DialogHelpers.CreateReply(turnContext, adaptiveCardPath, true), cancellationToken);
                             
                         }
                     }
@@ -102,6 +104,8 @@ namespace BizTalkAdminBot
             //Create the dialog context for the current turn
             var dc = await _dialogs.CreateContextAsync(turnContext, cancellationToken);
 
+            string adaptiveCardData;
+
             string command = turnContext.Activity.Text;
             Activity reply = null;
 
@@ -118,13 +122,8 @@ namespace BizTalkAdminBot
                     await botAdapter.SignOutUserAsync(turnContext, Constants.OAuthConnectionName, cancellationToken:cancellationToken);
 
                     //Tell the user that they are signed out
-                    reply = turnContext.Activity.CreateReply();
-                    string signOutMessageJson = GenericHelpers.ReadTextFromFile(@".\wwwroot\Resources\AdaptiveCards\SignOutMessage.json");
-                    reply.Attachments = new List<Attachment>()
-                    {
-                        DialogHelpers.CreateAdaptiveCardAttachment(signOutMessageJson)
-                    };
-                    await turnContext.SendActivityAsync(reply, cancellationToken);
+                    adaptiveCardData = string.Format(Constants.AdaptiveCardPath, Constants.AdaptiveCards.SignOutMessage.ToString());
+                    await turnContext.SendActivityAsync(DialogHelpers.CreateReply(turnContext, adaptiveCardData, true), cancellationToken);
                 
                     //end the dialog as the user is signed out. A new login will begin the new dialog.
                     await dc.EndDialogAsync(Constants.RootDialogName , cancellationToken);
@@ -133,13 +132,9 @@ namespace BizTalkAdminBot
                     break;
 
                 case "help": 
-                    reply = turnContext.Activity.CreateReply();
-                    string helpMessgeJson = GenericHelpers.ReadTextFromFile(@".\wwwroot\Resources\AdaptiveCards\HelpMessage.json");
-                    reply.Attachments = new List<Attachment>()
-                    {
-                        DialogHelpers.CreateAdaptiveCardAttachment(helpMessgeJson)
-                    };
-                    await turnContext.SendActivityAsync(reply, cancellationToken);
+                    
+                    adaptiveCardData = string.Format(Constants.AdaptiveCardPath, Constants.AdaptiveCards.HelpMessage.ToString());
+                    await turnContext.SendActivityAsync(DialogHelpers.CreateReply(turnContext, adaptiveCardData, true), cancellationToken);
                     break;
 
                 default:
@@ -192,7 +187,8 @@ namespace BizTalkAdminBot
                 {
                     var parts = _accessors.CommandState.GetAsync(stepContext.Context, () => string.Empty, cancellationToken: cancellationToken).Result.Split(' ');
                     string command = parts[0].ToLowerInvariant();
-                    Activity reply = null;
+
+                    string adaptiveCardData;
 
                     switch(command)
                     {
@@ -208,16 +204,12 @@ namespace BizTalkAdminBot
                             await _accessors.ApplicationState.SetAsync(stepContext.Context, bizTalkApplications, cancellationToken: cancellationToken);
                             await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
 
-                            reply = stepContext.Context.Activity.CreateReply();
-                            string getAppJson = AdaptiveCardsHelper.CreateGetApplicationsAdaptiveCard(bizTalkApplications);
-                            //getAppJson = getAppJson.Replace("http://localhost/{0}", string.Format(Constants.CardImageUrl, Constants.BizManImage));
-                            reply.Attachments = new List<Attachment>()
-                            {
-                                DialogHelpers.CreateAdaptiveCardAttachment(getAppJson)
-                            };
-                            
-                            await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
-                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateOperationsReply(stepContext), cancellationToken: cancellationToken);
+                            adaptiveCardData = AdaptiveCardsHelper.CreateGetApplicationsAdaptiveCard(bizTalkApplications);
+
+                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken: cancellationToken);
+                            await stepContext.Context.SendActivityAsync
+                            (DialogHelpers.CreateReply(stepContext.Context, string.Format(Constants.AdaptiveCardPath, 
+                            Constants.AdaptiveCards.OperationsMessage.ToString()) ,true), cancellationToken);
                             break;
 
                         case "getorchbyapp":
@@ -225,11 +217,13 @@ namespace BizTalkAdminBot
                             //Check the accessors to check if the ApplicationState contains a list of the application, if yes select it else, query the details from
                             // On premises BizTalk System. This is done to avoid fetching the applications multiple times.
 
+                            //Uncomment This
                             //BizTalkOperationApiHelper apiHelper = new BizTalkOperationApiHelper("getallapplications");
                             //List<Application> applications = await apiHelper.GetApplicationsAsync();
                             var apps = await _accessors.ApplicationState.GetAsync(stepContext.Context, () => new List<Application>(), cancellationToken: cancellationToken);
 
-                            // if(apps.Count == 0 || apps == null)
+                            //Uncomment This Later on 
+                            //if(apps.Count == 0 || apps == null)
                             // {
                             //     //BizTalkOperationApiHelper apiHelper = new BizTalkOperationApiHelper("getallapplications");
                             //     //List<Application> applications = await apiHelper.GetApplicationsAsync();
@@ -238,31 +232,25 @@ namespace BizTalkAdminBot
                             string appListJson = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplications.json");
                             
                             List<Application> bizTalkApps = JsonConvert.DeserializeObject<List<Application>>(appListJson);
-                            reply = stepContext.Context.Activity.CreateReply();
-                            string applist = AdaptiveCardsHelper.CreateSelectApplicationListAdaptiveCard(bizTalkApps);
-                           
-                            reply.Attachments = new List<Attachment>()
-                            {
-                                DialogHelpers.CreateAdaptiveCardAttachment(applist)
-                            };
                             
-                            await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
-                            //await stepContext.Context.SendActivityAsync(DialogHelpers.CreateOperationsReply(stepContext), cancellationToken: cancellationToken);
+                            adaptiveCardData = AdaptiveCardsHelper.CreateSelectApplicationListAdaptiveCard(bizTalkApps);
+
+                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken: cancellationToken);
                             break;
 
                         case "feedback":
-                            string feedBackCardJson = GenericHelpers.ReadTextFromFile(@".\wwwroot\Resources\AdaptiveCards\FeedBackCard.json");
-                            reply = stepContext.Context.Activity.CreateReply();
-                            reply.Attachments = new List<Attachment>()
-                            {
-                                DialogHelpers.CreateAdaptiveCardAttachment(feedBackCardJson)
-                            };
-                            await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
-                            //await stepContext.Context.SendActivityAsync(DialogHelpers.CreateOperationsReply(stepContext), cancellationToken: cancellationToken);
+                            adaptiveCardData = string.Format(Constants.AdaptiveCardPath, Constants.AdaptiveCards.FeedBackCard.ToString());
+                            
+                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, true), cancellationToken: cancellationToken);
+                            await stepContext.Context.SendActivityAsync
+                            (DialogHelpers.CreateReply(stepContext.Context, string.Format(Constants.AdaptiveCardPath, 
+                            Constants.AdaptiveCards.OperationsMessage.ToString()) ,true), cancellationToken);
                             break;
                         
                         default:
-                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateOperationsReply(stepContext), cancellationToken);
+                            await stepContext.Context.SendActivityAsync
+                            (DialogHelpers.CreateReply(stepContext.Context, string.Format(Constants.AdaptiveCardPath, 
+                            Constants.AdaptiveCards.OperationsMessage.ToString()) ,true), cancellationToken);
                             break;
                     }
                 }
@@ -273,10 +261,8 @@ namespace BizTalkAdminBot
                 if(System.Convert.ToBoolean(token["postback"].Value<string>()))
                 {
                     JToken commandToken = JToken.Parse(stepContext.Context.Activity.Value.ToString());
-
                     string command = GenericHelpers.ParseCommand(commandToken);
-
-                    Activity reply = null;
+                    string adaptiveCardData;
 
                     switch(command)
                     {
@@ -284,19 +270,18 @@ namespace BizTalkAdminBot
                             
                             string sampleOrchList = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetOrchestrations.json");
                             List<Orchestration> orchestrations= JsonConvert.DeserializeObject<List<Orchestration>>(sampleOrchList);
-                            reply = stepContext.Context.Activity.CreateReply();
+
                             string getOrchJson = AdaptiveCardsHelper.CreateGetOrchestrationsAdaptiveCard(orchestrations, "ConfigureHTTPReceiveUsingBTDF");
+                            adaptiveCardData = AdaptiveCardsHelper.CreateGetOrchestrationsAdaptiveCard(orchestrations, "ConfigureHTTPReceiveUsingBTDF");
                             
-                            reply.Attachments = new List<Attachment>()
-                            {
-                                DialogHelpers.CreateAdaptiveCardAttachment(getOrchJson)
-                            };
-                            await stepContext.Context.SendActivityAsync(reply, cancellationToken);
+                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
                             break;
 
                         case "feedback":
                             await stepContext.Context.SendActivityAsync("Thank You for the feedback.");
-                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateOperationsReply(stepContext), cancellationToken: cancellationToken);
+                            await stepContext.Context.SendActivityAsync
+                            (DialogHelpers.CreateReply(stepContext.Context, string.Format(Constants.AdaptiveCardPath, 
+                            Constants.AdaptiveCards.OperationsMessage.ToString()) ,true), cancellationToken);
                             break;
 
                         default:
@@ -304,7 +289,9 @@ namespace BizTalkAdminBot
                             break;
                             
                     }
-                    await stepContext.Context.SendActivityAsync(DialogHelpers.CreateOperationsReply(stepContext), cancellationToken: cancellationToken);
+                    await stepContext.Context.SendActivityAsync
+                            (DialogHelpers.CreateReply(stepContext.Context, string.Format(Constants.AdaptiveCardPath, 
+                            Constants.AdaptiveCards.OperationsMessage.ToString()) ,true), cancellationToken);
                   
 
                 }
@@ -312,27 +299,14 @@ namespace BizTalkAdminBot
                 {
                     await stepContext.Context.SendActivityAsync("We couldn't Sign you in. Please try again later");
 
-                }
-                
+                } 
 
             }
-
-            
-            // else
-            // {
-            //     await stepContext.Context.SendActivityAsync("We couldn't Sign you in. Please try again later");
-            // }
             await _accessors.CommandState.DeleteAsync(stepContext.Context, cancellationToken);
             return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
         }
-
-
-
-        #endregion
-
-    
+        #endregion    
     }
     #endregion
 }
-
 #endregion
