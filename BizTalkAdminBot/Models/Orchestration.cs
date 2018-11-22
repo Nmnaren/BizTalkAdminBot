@@ -6,26 +6,8 @@ using System.Threading.Tasks;
 namespace BizTalkAdminBot.Models
 {
  
-    public class InboundPort
-    {
-        public string Name { get; set; }
-        public string Binding { get; set; }
-        public string ReceivePort { get; set; }
-        public string PortType { get; set; }
-    }
-
-    public class OrchestrationTracking
-    {
-        public bool ServiceStartEnd { get; set; }
-        public bool MessageSendReceive { get; set; }
-        public bool InboundMessageBody { get; set; }
-        public bool OutboundMessageBody { get; set; }
-        public bool OrchestartionEvents { get; set; }
-        public bool TrackPropertiesForIncomingMessages { get; set; }
-        public bool TrackPropertiesForOutgoingMessages { get; set; }
-        public Body Body { get; set; }
-        public Property Property { get; set; }
-    }
+    
+    
 
     public class Orchestration
     {
@@ -40,6 +22,6 @@ namespace BizTalkAdminBot.Models
         public List<object> UsedRoles { get; set; }
         public List<object> ImplementedRoles { get; set; }
         public List<object> InvokedOrchestrations { get; set; }
-        public OrchestrationTracking Tracking { get; set; }
+        public Tracking Tracking { get; set; }
     }
 }
