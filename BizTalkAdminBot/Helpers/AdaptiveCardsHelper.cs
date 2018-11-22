@@ -14,7 +14,12 @@ namespace BizTalkAdminBot.Helpers
     /// </summary>
     public class AdaptiveCardsHelper
     {
-        public static string CreateGetApplicationsAdaptiveCard(List<Application> applicationList)
+        /// <summary>
+        /// Create the Adaptive Cards To Display the List of Applications in BizTalk Environment
+        /// </summary>
+        /// <param name="applications">List of BizTalk Application object</param>
+        /// <returns>Adaptive Card Json String</returns>
+        public static string CreateGetApplicationsAdaptiveCard(List<Application> applications)
         {
             #region TopLevelColumn
             AdaptiveColumnSet topLevelColumnSet = CreateTopLevelColumnSet();
@@ -57,7 +62,7 @@ namespace BizTalkAdminBot.Helpers
                 }
             };
 
-            foreach (Application app in applicationList)
+            foreach (Application app in applications)
             {
                 string name = app.Name;
                 string status = app.Status;
@@ -124,9 +129,16 @@ namespace BizTalkAdminBot.Helpers
             adaptiveCard.Body.Add(topLevelColumnSet);
             adaptiveCard.Body.Add(applicationColumnSet);
             string adaptiveCardJson = adaptiveCard.ToJson();
+            adaptiveCardJson = RenderStaticImage(adaptiveCardJson, Constants.BizManDummyUrl, Constants.BizManImagePath);
             return adaptiveCardJson;
         }
 
+        /// <summary>
+        /// Create the Adaptive Card to display the Orchestrations in particular BizTalk application
+        /// </summary>
+        /// <param name="orchestrations">List of BizTalk orchestrations</param>
+        /// <param name="appName">BizTalk Application Name</param>
+        /// <returns>Adaptive Card Json String</returns>
         public static string CreateGetOrchestrationsAdaptiveCard(List<Orchestration> orchestrations, string appName)
         {
             #region TopLevelColumn
@@ -200,6 +212,7 @@ namespace BizTalkAdminBot.Helpers
             adaptiveCard.Body.Add(topLevelColumnSet);
             adaptiveCard.Body.Add(container);
             string adaptiveCardJson = adaptiveCard.ToJson();
+            adaptiveCardJson = RenderStaticImage(adaptiveCardJson, Constants.BizManDummyUrl, Constants.BizManImagePath);
             return adaptiveCardJson;
 
         }
@@ -207,8 +220,8 @@ namespace BizTalkAdminBot.Helpers
         /// <summary>
         /// Create the application list drop down
         /// </summary>
-        /// <param name="applications"></param>
-        /// <returns></returns>
+        /// <param name="applications">List of BizTak application objects</param>
+        /// <returns>Adaptive Card Json String</returns>
         public static string CreateSelectApplicationListAdaptiveCard(List<Application> applications)
         {
             #region TopLevelColumn
@@ -256,6 +269,7 @@ namespace BizTalkAdminBot.Helpers
             #endregion
 
             string adaptiveCardJson = adaptiveCard.ToJson();
+            adaptiveCardJson = RenderStaticImage(adaptiveCardJson, Constants.BizManDummyUrl, Constants.BizManImagePath);
             return adaptiveCardJson;
 
         }
@@ -344,5 +358,24 @@ namespace BizTalkAdminBot.Helpers
             return adaptiveCardResult.Card;
 
         }
+
+        /// <summary>
+        /// Replace the dummy image ur with base 64 encoded string that can be rendered by Adaptive Card Renderer
+        /// </summary>
+        /// <param name="adaptiveCard">Adaptive Card Json String</param>
+        /// <param name="replaceableUrl">Dummy Uri used while creating the Adaptive Card</param>
+        /// <param name="imagePath">Path where the image is stored.</param>
+        /// <returns></returns>
+        public static string RenderStaticImage(string adaptiveCard, string replaceableUrl, string imagePath)
+        {
+            string imagebase64String = GenericHelpers.ConvertResourcesToBase64String(imagePath);
+
+            adaptiveCard = adaptiveCard.Replace(replaceableUrl, string.Format(Constants.CardImageUrl, imagebase64String));
+
+            return adaptiveCard;
+
+        }
+
+        
     }
 }

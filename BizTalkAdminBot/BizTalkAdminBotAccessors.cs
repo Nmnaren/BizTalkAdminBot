@@ -1,14 +1,14 @@
-﻿namespace BizTalkAdminBot
+﻿#region References
+using System;
+using System.Collections.Generic;
+using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Dialogs;
+using BizTalkAdminBot.Models;
+
+#endregion
+
+namespace BizTalkAdminBot
 {
-
-    #region References
-    using System;
-    using Microsoft.Bot.Builder;
-    using Microsoft.Bot.Builder.Dialogs;
-
-    #endregion
-
-
     /// <summary>
     /// This class is created as a Singleton and passed into the IBot-derived constructor.
     ///  constructor for how that is injected.
@@ -25,9 +25,14 @@
         public static readonly string DialogStateName = $"{nameof(BizTalkAdminBotAccessors)}.DialogState";
 
         public static readonly string CommandStateName = $"{nameof(BizTalkAdminBotAccessors)}.CommandState";
+
+        public static readonly string ApplicationStateName = $"{nameof(BizTalkAdminBotAccessors)}.ApplicationState";
+
         public IStatePropertyAccessor<DialogState> ConversationDialogState { get; set; }
 
         public IStatePropertyAccessor<string> CommandState { get; set; }
+
+        public IStatePropertyAccessor<List<Application>> ApplicationState {get; set;}
 
         public ConversationState ConversationState { get; }
 

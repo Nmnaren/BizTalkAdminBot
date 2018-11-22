@@ -46,7 +46,7 @@ namespace BizTalkAdminBot.Helpers
         /// Get the Orchestration in an Application
         /// </summary>
         /// <returns>List of Orchestration objects</returns>
-        public async Task<List<Orchestration>> GetOrchestratiopnsByAppAsync(string application)
+        public async Task<List<Orchestration>> GetOrchestrationsByAppAsync(string application)
         {
             List<Orchestration> orchestrations = new List<Orchestration>();
 
@@ -71,7 +71,7 @@ namespace BizTalkAdminBot.Helpers
             string response = string.Empty;
             HttpClient client = new HttpClient();
 
-            string request = await ComposeRequestAsync();
+            string request = ComposeRequest();
 
             var content = new StringContent(request, Encoding.UTF8, "application/json");
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
@@ -86,7 +86,11 @@ namespace BizTalkAdminBot.Helpers
             return response;
         }
 
-        private async Task<string> ComposeRequestAsync()
+        /// <summary>
+        /// Compose the request sent to the Logic App
+        /// </summary>
+        /// <returns>String for the request</returns>
+        private string ComposeRequest()
         {
             StringBuilder builder = new StringBuilder();
             builder.Append("{");

@@ -62,26 +62,7 @@ namespace BizTalkAdminBot.Helpers
             return oauthPrompt;
             
         }
-
-      
-        /// <summary>
-        /// Parses the Value Token from Activty to decide upon the command.
-        /// </summary>
-        /// <param name="jToken">Value Token in the Activty</param>
-        /// <returns>parse Command as string</returns>
-        public static string ParseCommand(JToken jToken)
-        {
-            string command = string.Empty;
-
-            if(jToken != null)
-            {
-                command = jToken["command"].Value<string>();
-
-            }
-
-            return command;
-        }
-
+        
         /// <summary>
         /// Method To Create Reply which sends out Operations
         /// </summary>

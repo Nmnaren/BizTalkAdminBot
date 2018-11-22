@@ -16,6 +16,7 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 using System.Collections.Generic;
 using BizTalkAdminBot.Helpers;
+using BizTalkAdminBot.Models;
 #endregion
 
 namespace BizTalkAdminBot
@@ -155,6 +156,7 @@ namespace BizTalkAdminBot
                 var accessors = new BizTalkAdminBotAccessors(conversationState, userState)
                 {
                     CommandState = userState.CreateProperty<string>(BizTalkAdminBotAccessors.CommandStateName),
+                    ApplicationState = userState.CreateProperty<List<Application>>(BizTalkAdminBotAccessors.ApplicationStateName),
                     ConversationDialogState = userState.CreateProperty<DialogState>(BizTalkAdminBotAccessors.DialogStateName),
                 };
 

@@ -27,6 +27,7 @@ namespace BizTalkAdminBot
         //Constructor Through which the accessors get injected at the StartUp
         public BizTalkAdminBot(BizTalkAdminBotAccessors accessors)
         {
+            //Connection Name is required to enable the Bot to connect to service providers through OAuth
             if(string.IsNullOrWhiteSpace(Constants.OAuthConnectionName))
             {
                 throw new ArgumentNullException("Connection name needs to be set in the Constants class");
@@ -127,6 +128,8 @@ namespace BizTalkAdminBot
                 
                     //end the dialog as the user is signed out. A new login will begin the new dialog.
                     await dc.EndDialogAsync(Constants.RootDialogName , cancellationToken);
+                    await _accessors.ApplicationState.DeleteAsync(turnContext, cancellationToken: cancellationToken);
+                    await _accessors.UserState.SaveChangesAsync(turnContext, cancellationToken: cancellationToken);
                     break;
 
                 case "help": 
@@ -194,16 +197,20 @@ namespace BizTalkAdminBot
                     switch(command)
                     {
                         case "getallapplications":
-                            BizTalkOperationApiHelper apiHelper = new BizTalkOperationApiHelper("getallapplications");
+                            //BizTalkOperationApiHelper apiHelper = new BizTalkOperationApiHelper("getallapplications");
 
-                            List<Application> applications = await apiHelper.GetApplicationsAsync();
+                            //List<Application> applications = await apiHelper.GetApplicationsAsync();
+                            string sampleAppListJson = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplications.json");
+                            List<Application> bizTalkApplications= JsonConvert.DeserializeObject<List<Application>>(sampleAppListJson);
+                            
+                            //Save the list of application object in the memory so as to see if the result was queried during the same session.
+                            //This saves the communication with the Logic App thus saving the number of round trips
+                            await _accessors.ApplicationState.SetAsync(stepContext.Context, bizTalkApplications, cancellationToken: cancellationToken);
+                            await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
 
-
-                            //string sampleAppListJson = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplications.json");
-                            //List<Application> bizTalkApplications= JsonConvert.DeserializeObject<List<Application>>(sampleAppListJson);
                             reply = stepContext.Context.Activity.CreateReply();
-                            string getAppJson = AdaptiveCardsHelper.CreateGetApplicationsAdaptiveCard(applications);
-                            getAppJson = getAppJson.Replace("http://localhost/{0}", string.Format(Constants.CardImageUrl, Constants.BizManImage));
+                            string getAppJson = AdaptiveCardsHelper.CreateGetApplicationsAdaptiveCard(bizTalkApplications);
+                            //getAppJson = getAppJson.Replace("http://localhost/{0}", string.Format(Constants.CardImageUrl, Constants.BizManImage));
                             reply.Attachments = new List<Attachment>()
                             {
                                 DialogHelpers.CreateAdaptiveCardAttachment(getAppJson)
@@ -214,17 +221,26 @@ namespace BizTalkAdminBot
                             break;
 
                         case "getorchbyapp":
-                            
+
+                            //Check the accessors to check if the ApplicationState contains a list of the application, if yes select it else, query the details from
+                            // On premises BizTalk System. This is done to avoid fetching the applications multiple times.
+
+                            //BizTalkOperationApiHelper apiHelper = new BizTalkOperationApiHelper("getallapplications");
+                            //List<Application> applications = await apiHelper.GetApplicationsAsync();
+                            var apps = await _accessors.ApplicationState.GetAsync(stepContext.Context, () => new List<Application>(), cancellationToken: cancellationToken);
+
+                            // if(apps.Count == 0 || apps == null)
+                            // {
+                            //     //BizTalkOperationApiHelper apiHelper = new BizTalkOperationApiHelper("getallapplications");
+                            //     //List<Application> applications = await apiHelper.GetApplicationsAsync();
+                            // }
+
                             string appListJson = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplications.json");
                             
                             List<Application> bizTalkApps = JsonConvert.DeserializeObject<List<Application>>(appListJson);
                             reply = stepContext.Context.Activity.CreateReply();
                             string applist = AdaptiveCardsHelper.CreateSelectApplicationListAdaptiveCard(bizTalkApps);
-                            applist = applist.Replace("http://localhost/{0}", string.Format(Constants.CardImageUrl, Constants.BizManImage));
-
-
-                            //string getOrchJson = AdaptiveCardsHelper.CreateGetOrchestrationsAdaptiveCard(orchestrations, "ConfigureHTTPReceiveUsingBTDF");
-                            //getOrchJson = getOrchJson.Replace("http://localhost/{0}", string.Format(Constants.CardImageUrl, Constants.BizManImage));
+                           
                             reply.Attachments = new List<Attachment>()
                             {
                                 DialogHelpers.CreateAdaptiveCardAttachment(applist)
@@ -258,7 +274,7 @@ namespace BizTalkAdminBot
                 {
                     JToken commandToken = JToken.Parse(stepContext.Context.Activity.Value.ToString());
 
-                    string command = DialogHelpers.ParseCommand(commandToken);
+                    string command = GenericHelpers.ParseCommand(commandToken);
 
                     Activity reply = null;
 
@@ -266,13 +282,11 @@ namespace BizTalkAdminBot
                     {
                         case "getorchbyapp":
                             
-                            //Experiment with the BOt Accessors
-                            
                             string sampleOrchList = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetOrchestrations.json");
                             List<Orchestration> orchestrations= JsonConvert.DeserializeObject<List<Orchestration>>(sampleOrchList);
                             reply = stepContext.Context.Activity.CreateReply();
                             string getOrchJson = AdaptiveCardsHelper.CreateGetOrchestrationsAdaptiveCard(orchestrations, "ConfigureHTTPReceiveUsingBTDF");
-                            getOrchJson = getOrchJson.Replace("http://localhost/{0}", string.Format(Constants.CardImageUrl, Constants.BizManImage));
+                            
                             reply.Attachments = new List<Attachment>()
                             {
                                 DialogHelpers.CreateAdaptiveCardAttachment(getOrchJson)

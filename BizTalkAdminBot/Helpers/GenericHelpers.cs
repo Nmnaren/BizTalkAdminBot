@@ -6,6 +6,8 @@
     using System.Linq;
     using System.Threading.Tasks;
     using System.IO;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
     #endregion
 
     /// <summary>
@@ -40,5 +42,27 @@
         {
             return File.ReadAllText(resourcePath);
         }
+
+        
+        /// <summary>
+        /// Parses the Value Token from Activty to decide upon the command.
+        /// </summary>
+        /// <param name="jToken">Value Token in the Activty</param>
+        /// <returns>parse Command as string</returns>
+        public static string ParseCommand(JToken jToken)
+        {
+            string command = string.Empty;
+
+            if(jToken != null)
+            {
+                command = jToken["command"].Value<string>();
+
+            }
+
+            return command;
+        }
+
+
+
     }
 }
