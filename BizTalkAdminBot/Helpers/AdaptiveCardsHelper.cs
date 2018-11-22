@@ -275,6 +275,207 @@ namespace BizTalkAdminBot.Helpers
         }
 
         /// <summary>
+        /// Create the Adaptive Card to display the Send Ports in particular BizTalk application
+        /// </summary>
+        /// <param name="sendPorts">List of Send Ports</param>
+        /// <param name="appName">BizTalk Application Name</param>
+        /// <returns>Adaptive Card Json String</returns>
+        public static string CreateGetSendPortsByAppAdaptiveCard(List<SendPort> sendPorts, string appName)
+        {
+            #region TopLevelColumn
+            AdaptiveColumnSet topLevelColumnSet = CreateTopLevelColumnSet();
+            #endregion
+
+            #region Container
+
+            AdaptiveContainer container = new AdaptiveContainer()
+            {
+                Id = "container",
+                Spacing = AdaptiveSpacing.Default,
+                Separator = true,
+                Items = new List<AdaptiveElement>()
+                {
+                    new AdaptiveTextBlock()
+                    {
+                        Id = "SendPortsByAppName",
+                        Color = AdaptiveTextColor.Default,
+                        IsSubtle = true,
+                        Separator = true,
+                        Spacing = AdaptiveSpacing.Default,
+                        Text = string.Format("Send Ports in {0}", appName)
+
+                    }
+                }
+
+            };
+            
+            #endregion
+
+            #region FactSet
+
+            
+            foreach(SendPort sendPort in sendPorts)
+            {
+                string name = sendPort.Name;
+                
+                AdaptiveFactSet sendPortFactSet = new AdaptiveFactSet()
+                {
+                    Id = name,
+                    Separator = true,
+                    Facts = new List<AdaptiveFact>()
+                    {
+                        new AdaptiveFact()
+                        {
+                            Title = "Name",
+                            Value = name,
+                        },
+                        new AdaptiveFact()
+                        {
+                            Title = "Handler",
+                            Value = sendPort.PrimaryTransport.SendHandler
+                        },
+
+                        new AdaptiveFact()
+                        {
+                            Title = "Status",
+                            Value = sendPort.Status
+                        }
+                    }
+                };
+                container.Items.Add(sendPortFactSet);
+                
+            }
+            #endregion
+
+
+            AdaptiveCard adaptiveCard = new AdaptiveCard();
+            adaptiveCard.Body.Add(topLevelColumnSet);
+            adaptiveCard.Body.Add(container);
+            string adaptiveCardJson = adaptiveCard.ToJson();
+            adaptiveCardJson = RenderStaticImage(adaptiveCardJson, Constants.BizManDummyUrl, Constants.BizManImagePath);
+            return adaptiveCardJson;
+
+        }
+
+        public static string CreateGetHostsAdaptiveCard(List<Host> hosts)
+        {
+            #region TopLevelColumn
+            AdaptiveColumnSet topLevelColumnSet = CreateTopLevelColumnSet();
+            #endregion
+
+            #region AdapticeHostColumnSet
+
+            AdaptiveColumnSet hostColumnSet = new AdaptiveColumnSet()
+            {
+                Id = "hostColumnSet",
+                Separator = true,
+                Spacing = AdaptiveSpacing.Default,
+
+            };
+
+            List<AdaptiveElement> hostTextBlocks = new List<AdaptiveElement>()
+            {
+                new AdaptiveTextBlock()
+                {
+                    Id = "hostNameStatic",
+                    HorizontalAlignment = AdaptiveHorizontalAlignment.Left,
+                    Separator= true,
+                    Size = AdaptiveTextSize.Default,
+                    Text = "Host Name",
+                    Color = AdaptiveTextColor.Default,
+                    Weight = AdaptiveTextWeight.Bolder,
+                }
+            };
+
+
+            List<AdaptiveElement> typeTextBlocks = new List<AdaptiveElement>()
+            {
+                new AdaptiveTextBlock()
+                {
+                    Id = "typeStatic",
+                    HorizontalAlignment = AdaptiveHorizontalAlignment.Right,
+                    Separator = true,
+                    Size = AdaptiveTextSize.Default,
+                    Text = "Type",
+                    Color = AdaptiveTextColor.Default,
+                    Weight = AdaptiveTextWeight.Bolder
+                }
+            };
+
+            foreach(Host host in hosts)
+            {
+                string name = host.Name;
+                string type = host.Type;
+
+                AdaptiveTextBlock hostTextBlock = new AdaptiveTextBlock()
+                {
+                    Id = name,
+                    HorizontalAlignment = AdaptiveHorizontalAlignment.Left,
+                    Separator = true,
+                    Size = AdaptiveTextSize.Default,
+                    Text = name,
+                    Color = AdaptiveTextColor.Default,
+                    Weight = AdaptiveTextWeight.Default
+
+                };
+                AdaptiveTextBlock typeTextBlock = new AdaptiveTextBlock()
+                {
+                    Id = string.Format("{0}_{1}", name, type),
+                    HorizontalAlignment = AdaptiveHorizontalAlignment.Right,
+                    Separator = true,
+                    Size = AdaptiveTextSize.Default,
+                    Text = type,
+                    Color = AdaptiveTextColor.Default,
+                    Weight = AdaptiveTextWeight.Default,
+
+                };
+
+                hostTextBlocks.Add(hostTextBlock);
+                typeTextBlocks.Add(typeTextBlock);
+
+
+            }
+
+            AdaptiveColumn hostColumn = new AdaptiveColumn()
+            {
+                Id = "hostListColumn",
+                Items = hostTextBlocks,
+                Separator = true,
+                Spacing = AdaptiveSpacing.Default,
+                Width = AdaptiveColumnWidth.Stretch
+
+            };
+
+            AdaptiveColumn typeColumn = new AdaptiveColumn()
+            {
+                Id = "typeListColumn",
+                Items = typeTextBlocks,
+                Separator = true,
+                Spacing = AdaptiveSpacing.Default,
+                Width = AdaptiveColumnWidth.Auto
+            };
+
+            hostColumnSet.Columns = new List<AdaptiveColumn>()
+            {
+                hostColumn,
+                typeColumn
+            };
+
+            #endregion
+
+            AdaptiveCard adaptiveCard = new AdaptiveCard();
+            adaptiveCard.Body.Add(topLevelColumnSet);
+            adaptiveCard.Body.Add(hostColumnSet);
+            string adaptiveCardJson = adaptiveCard.ToJson();
+            adaptiveCardJson = RenderStaticImage(adaptiveCardJson, Constants.BizManDummyUrl, Constants.BizManImagePath);
+            return adaptiveCardJson;
+
+
+        }
+
+        #region CommonMethods
+
+        /// <summary>
         /// Create the Top Level Column Set in All Adaptive Cards
         /// </summary>
         /// <returns>Adaptive Column Set</returns>
@@ -360,7 +561,7 @@ namespace BizTalkAdminBot.Helpers
         }
 
         /// <summary>
-        /// Replace the dummy image ur with base 64 encoded string that can be rendered by Adaptive Card Renderer
+        /// Replace the dummy image url with base 64 encoded string that can be rendered by Adaptive Card Renderer
         /// </summary>
         /// <param name="adaptiveCard">Adaptive Card Json String</param>
         /// <param name="replaceableUrl">Dummy Uri used while creating the Adaptive Card</param>
@@ -375,6 +576,8 @@ namespace BizTalkAdminBot.Helpers
             return adaptiveCard;
 
         }
+
+        #endregion
 
         
     }

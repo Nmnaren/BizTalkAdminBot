@@ -238,6 +238,17 @@ namespace BizTalkAdminBot
                             await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken: cancellationToken);
                             break;
 
+                        case "gethosts":
+                            string hostList = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetHosts.json");
+                            List<Host> hosts = JsonConvert.DeserializeObject<List<Host>>(hostList);
+                            adaptiveCardData = AdaptiveCardsHelper.CreateGetHostsAdaptiveCard(hosts);
+
+                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
+                            await stepContext.Context.SendActivityAsync
+                            (DialogHelpers.CreateReply(stepContext.Context, string.Format(Constants.AdaptiveCardPath, 
+                            Constants.AdaptiveCards.OperationsMessage.ToString()) ,true), cancellationToken);
+                            break;
+
                         case "feedback":
                             adaptiveCardData = string.Format(Constants.AdaptiveCardPath, Constants.AdaptiveCards.FeedBackCard.ToString());
                             

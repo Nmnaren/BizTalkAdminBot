@@ -43,10 +43,9 @@ namespace BizTalkAdminBot.Helpers
         }
 
         /// <summary>
-        /// Get the Orchestration in an Application
+        /// Get the Orchestrations in BizTalk environment
         /// </summary>
-        /// <returns>List of Orchestration objects</returns>
-        public async Task<List<Orchestration>> GetOrchestrationsByAppAsync(string application)
+        public async Task<List<Orchestration>> GetOrchestrationsAsync()
         {
             List<Orchestration> orchestrations = new List<Orchestration>();
 
@@ -55,10 +54,42 @@ namespace BizTalkAdminBot.Helpers
             if (!string.IsNullOrEmpty(orchestrationJson))
             {
                 orchestrations = JsonConvert.DeserializeObject<List<Orchestration>>(orchestrationJson);
-                orchestrations = orchestrations.Where(x => x.ApplicationName == application).ToList<Orchestration>();
-
             }
             return orchestrations;
+        }
+
+        /// <summary>
+        /// Get the Hosts in the BizTalk Environment
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<Host>> GetHostsAsync()
+        {
+            List<Host> hosts = new List<Host>();
+
+            string hostsJson = await GetOnPremDataAsync();
+
+            if (!string.IsNullOrEmpty(hostsJson))
+            {
+                hosts = JsonConvert.DeserializeObject<List<Host>>(hostsJson);
+            }
+            return hosts;
+        }
+
+        /// <summary>
+        /// Get the Send Ports in BizTalk Environment
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<SendPort>> GetSendPortsAsync()
+        {
+            List<SendPort> sendPorts = new List<SendPort>();
+
+            string sendporstJson = await GetOnPremDataAsync();
+
+            if (!string.IsNullOrEmpty(sendporstJson))
+            {
+                sendPorts = JsonConvert.DeserializeObject<List<SendPort>>(sendporstJson);
+            }
+            return sendPorts;
         }
 
 
