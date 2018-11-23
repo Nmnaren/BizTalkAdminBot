@@ -52,6 +52,7 @@ namespace BizTalkAdminBot
         public async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken= default(CancellationToken))
         {
             DialogContext dc = null;
+            string adaptiveCardPath = string.Empty;
             
             //based upon the activity received, the decision needs to be made if a new dialog is created or an existing one is used.
 
@@ -62,22 +63,37 @@ namespace BizTalkAdminBot
                     break;
                 
                 case ActivityTypes.Event:
-                    dc = await _dialogs.CreateContextAsync(turnContext, cancellationToken);
-                    await dc.ContinueDialogAsync(cancellationToken);
-                    if(!turnContext.Responded)
+
+                    if(turnContext.Activity.Name == "setUserIdEvent")
                     {
-                        await dc.BeginDialogAsync(Constants.RootDialogName, cancellationToken);
+                        adaptiveCardPath = string.Format(Constants.AdaptiveCardPath, Constants.AdaptiveCards.WelcomeMessage.ToString());
+                        await turnContext.SendActivityAsync(DialogHelpers.CreateReply(turnContext, adaptiveCardPath, true), cancellationToken);
+                    }
+                    else
+                    {
+                        dc = await _dialogs.CreateContextAsync(turnContext, cancellationToken);
+                        await dc.ContinueDialogAsync(cancellationToken);
+                        if(!turnContext.Responded)
+                        {
+                            await dc.BeginDialogAsync(Constants.RootDialogName, cancellationToken);
+
+                        }
 
                     }
+                    
                     break;
                 
                 case ActivityTypes.ContactRelationUpdate:
+                    adaptiveCardPath = string.Format(Constants.AdaptiveCardPath, Constants.AdaptiveCards.WelcomeMessage.ToString());
+                    await turnContext.SendActivityAsync(DialogHelpers.CreateReply(turnContext, adaptiveCardPath, true), cancellationToken);
+                    break;
+
                 case ActivityTypes.ConversationUpdate:
                     foreach(var member in turnContext.Activity.MembersAdded)
                     {
                         if(member.Id != turnContext.Activity.Recipient.Id)
                         {
-                            string adaptiveCardPath = string.Format(Constants.AdaptiveCardPath, Constants.AdaptiveCards.WelcomeMessage.ToString());
+                            adaptiveCardPath = string.Format(Constants.AdaptiveCardPath, Constants.AdaptiveCards.WelcomeMessage.ToString());
                             await turnContext.SendActivityAsync(DialogHelpers.CreateReply(turnContext, adaptiveCardPath, true), cancellationToken);
                             
                         }
