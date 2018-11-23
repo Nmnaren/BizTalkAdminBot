@@ -90,5 +90,7 @@
 
         public const string AdaptiveCardPath = @"wwwroot\Resources\AdaptiveCards\{0}.json";
 
+        public const string NotFoundMessage = "Sorry, the Search for {} did not yeild any result.";
+
     }
 }

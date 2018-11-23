@@ -71,19 +71,13 @@ namespace BizTalkAdminBot
                     }
                     break;
                 
+                case ActivityTypes.ContactRelationUpdate:
                 case ActivityTypes.ConversationUpdate:
                     foreach(var member in turnContext.Activity.MembersAdded)
                     {
                         if(member.Id != turnContext.Activity.Recipient.Id)
                         {
                             string adaptiveCardPath = string.Format(Constants.AdaptiveCardPath, Constants.AdaptiveCards.WelcomeMessage.ToString());
-                            
-                            var reply = turnContext.Activity.CreateReply();
-                            string welcomeCardJson = GenericHelpers.ReadTextFromFile(@".\wwwroot\Resources\AdaptiveCards\WelcomeMessage.json");
-                            reply.Attachments = new List<Attachment>()
-                            {
-                                DialogHelpers.CreateAdaptiveCardAttachment(welcomeCardJson)
-                            };
                             await turnContext.SendActivityAsync(DialogHelpers.CreateReply(turnContext, adaptiveCardPath, true), cancellationToken);
                             
                         }
@@ -108,7 +102,7 @@ namespace BizTalkAdminBot
             string adaptiveCardData;
 
             string command = turnContext.Activity.Text;
-            Activity reply = null;
+            
 
             // Based upon the parse command different logic will be called to construct the reply activities
             switch(command)
@@ -224,7 +218,6 @@ namespace BizTalkAdminBot
                             break;
 
                         case "getorchbyapp":
-                        case "getsuspendedinstancesbyapp":
                         case "getsendportsbyapp":
 
                             //Check the accessors to check if the ApplicationState contains a list of the application, if yes select it else, query the details from
@@ -256,12 +249,22 @@ namespace BizTalkAdminBot
                             {
                                 string hostList = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetHosts.json");
                                 hosts = JsonConvert.DeserializeObject<List<Host>>(hostList);
+                                
+                            }
+
+                            if(hosts.Count == 0)
+                            {
+                                await stepContext.Context.SendActivityAsync(string.Format(Constants.NotFoundMessage, "gethosts"), cancellationToken: cancellationToken);
+                            }
+                            else
+                            {
                                 await _accessors.HostState.SetAsync(stepContext.Context, hosts, cancellationToken);
                                 await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
-                            }
-                            adaptiveCardData = AdaptiveCardsHelper.CreateGetHostsAdaptiveCard(hosts);
+                                adaptiveCardData = AdaptiveCardsHelper.CreateGetHostsAdaptiveCard(hosts);
 
-                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
+                                await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
+                            
+                            }
                             await stepContext.Context.SendActivityAsync
                             (DialogHelpers.CreateReply(stepContext.Context, 
                             string.Format(Constants.AdaptiveCardPath, (isFeedbackProvided ? Constants.AdaptiveCards.OperationMessageNoFB.ToString() : Constants.AdaptiveCards.OperationsMessage.ToString())) 
@@ -299,6 +302,7 @@ namespace BizTalkAdminBot
                     string command = GenericHelpers.ParseToken(commandToken, "command");
                     string adaptiveCardData = string.Empty;
                     string applicationName = string.Empty;
+                    BizTalkOperationApiHelper apiHelper;
 
                     switch(command)
                     {
@@ -313,15 +317,27 @@ namespace BizTalkAdminBot
                             {
                                 string sampleOrchList = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetOrchestrations.json");
                                 orchestrations= JsonConvert.DeserializeObject<List<Orchestration>>(sampleOrchList);
-                                await _accessors.OrchestrationState.SetAsync(stepContext.Context, orchestrations, cancellationToken);
-                                await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
+                                
 
                             }
 
-                            applicationName = commandToken["applicationChoiceSet"].Value<string>();
-                            adaptiveCardData = AdaptiveCardsHelper.CreateGetOrchestrationsAdaptiveCard(orchestrations.Where(x => x.ApplicationName == applicationName).ToList(), applicationName);
+                            if(orchestrations.Count == 0)
+                            {
+                                await stepContext.Context.SendActivityAsync(string.Format(Constants.NotFoundMessage, "getorchbyapp"), cancellationToken: cancellationToken);
+
+                            }
+                            else
+                            {
+                                await _accessors.OrchestrationState.SetAsync(stepContext.Context, orchestrations, cancellationToken);
+                                await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
+                                applicationName = commandToken["applicationChoiceSet"].Value<string>();
+                                adaptiveCardData = AdaptiveCardsHelper.CreateGetOrchestrationsAdaptiveCard(orchestrations.Where(x => x.ApplicationName == applicationName).ToList(), applicationName);
                             
-                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
+                                await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
+
+                            }
+
+                            
                             break;
 
                         case "getsendportsbyapp":
@@ -331,18 +347,27 @@ namespace BizTalkAdminBot
 
                             if(sendPorts.Count == 0 || sendPorts == null)
                             {
-                                BizTalkOperationApiHelper apiHelper = new BizTalkOperationApiHelper("getsendportsbyapp");
+                                apiHelper = new BizTalkOperationApiHelper("getsendportsbyapp");
                                 sendPorts = await apiHelper.GetSendPortsAsync();
 
                                 //save the list into SendPort State using Accessors
-                                await _accessors.SendPortState.SetAsync(stepContext.Context, sendPorts, cancellationToken);
-                                await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
-
+                                
                             }
 
-                            applicationName = commandToken["applicationChoiceSet"].Value<string>();
-                            adaptiveCardData = AdaptiveCardsHelper.CreateGetSendPortsByAppAdaptiveCard(sendPorts, applicationName);
-                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
+                            if(sendPorts.Count == 0)
+                            {
+                                await stepContext.Context.SendActivityAsync(string.Format(Constants.NotFoundMessage, "getsendportsbyapp"), cancellationToken: cancellationToken);
+
+                            }
+                            else
+                            {
+                                await _accessors.SendPortState.SetAsync(stepContext.Context, sendPorts, cancellationToken);
+                                await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
+                                applicationName = commandToken["applicationChoiceSet"].Value<string>();
+                                adaptiveCardData = AdaptiveCardsHelper.CreateGetSendPortsByAppAdaptiveCard(sendPorts, applicationName);
+                                await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
+
+                            }
                             break;
 
                         case "feedback":

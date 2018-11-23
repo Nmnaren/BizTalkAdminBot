@@ -92,6 +92,22 @@ namespace BizTalkAdminBot.Helpers
             return sendPorts;
         }
 
+        /// <summary>
+        /// Get the Instances in the BizTalk Environment
+        /// </summary>
+        /// <returns>List of Instance Object</returns>
+        public async Task<List<Instance>> GetInstancesAsync()
+        {
+            List<Instance> instances = new List<Instance>();
+            string instancesJson = await GetOnPremDataAsync();
+            if(!string.IsNullOrEmpty(instancesJson))
+            {
+                instances = JsonConvert.DeserializeObject<List<Instance>>(instancesJson);
+            }
+
+            return instances;
+        }
+
 
         /// <summary>
         /// Get the Data from On Premises BizTalk Environment using Logic App

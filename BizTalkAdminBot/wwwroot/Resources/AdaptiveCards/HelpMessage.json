@@ -62,12 +62,6 @@
         },
         {
             "type": "Action.Submit",
-            "id": "c4dee2ea-dde4-40c7-b697-e972ccfa1fea",
-            "title": "Get Suspended Instance By App",
-            "data": "getsuspendedinstancesbyapp"
-        },
-        {
-            "type": "Action.Submit",
             "id": "bc3bd761-e914-4aae-8655-db34b3c31184",
             "title": "Get All Applications",
             "data": "getallapplications"
