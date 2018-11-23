@@ -500,7 +500,7 @@ namespace BizTalkAdminBot.Helpers
                                 Id = "bizManImage",
                                 Spacing = AdaptiveSpacing.Default,
                                 HorizontalAlignment = AdaptiveHorizontalAlignment.Left,
-                                Size = AdaptiveImageSize.Small,
+                                Size = AdaptiveImageSize.Medium,
                                 Style = AdaptiveImageStyle.Default,
 
                                 //Replace the uri with the base64string later on

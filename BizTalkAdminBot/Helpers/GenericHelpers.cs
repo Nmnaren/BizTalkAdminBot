@@ -43,23 +43,23 @@
             return File.ReadAllText(resourcePath);
         }
 
-        
         /// <summary>
-        /// Parses the Value Token from Activty to decide upon the command.
+        /// Parses the Value Token from Activty to get concerned Value.
         /// </summary>
         /// <param name="jToken">Value Token in the Activty</param>
-        /// <returns>parse Command as string</returns>
-        public static string ParseCommand(JToken jToken)
+        /// <param name="key">Key whose value is to be parsed</param>
+        /// <returns>Parsed Value as string</returns>
+        public static string ParseToken(JToken jToken, string key)
         {
-            string command = string.Empty;
+            string value = string.Empty;
 
             if(jToken != null)
             {
-                command = jToken["command"].Value<string>();
+                value = jToken[key].Value<string>();
 
             }
 
-            return command;
+            return value;
         }
 
 

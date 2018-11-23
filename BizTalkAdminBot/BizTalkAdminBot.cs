@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
@@ -131,7 +132,9 @@ namespace BizTalkAdminBot
                     await _accessors.HostState.DeleteAsync(turnContext, cancellationToken);
                     await _accessors.OrchestrationState.DeleteAsync(turnContext, cancellationToken);
                     await _accessors.SendPortState.DeleteAsync(turnContext, cancellationToken);
+                    await _accessors.FeedbackState.DeleteAsync(turnContext, cancellationToken);
                     await _accessors.UserState.SaveChangesAsync(turnContext, cancellationToken: cancellationToken);
+                    
                     break;
 
                 case "help": 
@@ -181,6 +184,9 @@ namespace BizTalkAdminBot
         /// <returns></returns>
         private async Task<DialogTurnResult> ProcessStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            //Check if the User has already provided the feedback, if yes, then do not show the FeedBack card again.
+                var isFeedbackProvided = await _accessors.FeedbackState.GetAsync(stepContext.Context, ()=> false, cancellationToken);
+
             //This works with only the ImBack type events sent by the emulator
             if(stepContext.Result != null)
             {
@@ -192,6 +198,7 @@ namespace BizTalkAdminBot
                     string command = parts[0].ToLowerInvariant();
 
                     string adaptiveCardData;
+                    string operationCard = string.Empty;
 
                     switch(command)
                     {
@@ -211,64 +218,74 @@ namespace BizTalkAdminBot
 
                             await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken: cancellationToken);
                             await stepContext.Context.SendActivityAsync
-                            (DialogHelpers.CreateReply(stepContext.Context, string.Format(Constants.AdaptiveCardPath, 
-                            Constants.AdaptiveCards.OperationsMessage.ToString()) ,true), cancellationToken);
+                            (DialogHelpers.CreateReply(stepContext.Context, 
+                            string.Format(Constants.AdaptiveCardPath, (isFeedbackProvided ? Constants.AdaptiveCards.OperationMessageNoFB.ToString() : Constants.AdaptiveCards.OperationsMessage.ToString())) 
+                             ,true), cancellationToken);
                             break;
 
                         case "getorchbyapp":
+                        case "getsuspendedinstancesbyapp":
+                        case "getsendportsbyapp":
 
                             //Check the accessors to check if the ApplicationState contains a list of the application, if yes select it else, query the details from
                             // On premises BizTalk System. This is done to avoid fetching the applications multiple times.
 
-                            //Uncomment This
-                            //BizTalkOperationApiHelper apiHelper = new BizTalkOperationApiHelper("getallapplications");
-                            //List<Application> applications = await apiHelper.GetApplicationsAsync();
                             var apps = await _accessors.ApplicationState.GetAsync(stepContext.Context, () => new List<Application>(), cancellationToken: cancellationToken);
-
-                            //Uncomment This Later on 
-                            //if(apps.Count == 0 || apps == null)
-                            // {
-                            //     //BizTalkOperationApiHelper apiHelper = new BizTalkOperationApiHelper("getallapplications");
-                            //     //List<Application> applications = await apiHelper.GetApplicationsAsync();
-                            // }
-
-                            string appListJson = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplications.json");
                             
-                            List<Application> bizTalkApps = JsonConvert.DeserializeObject<List<Application>>(appListJson);
+                            if(apps.Count == 0 || apps == null)
+                            {
+                                 //BizTalkOperationApiHelper apiHelper = new BizTalkOperationApiHelper("getallapplications");
+                                 //List<Application> applications = await apiHelper.GetApplicationsAsync();
+                                 string appListJson = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplications.json");
+                                 apps = JsonConvert.DeserializeObject<List<Application>>(appListJson);
+
+                             }
                             
-                            adaptiveCardData = AdaptiveCardsHelper.CreateSelectApplicationListAdaptiveCard(bizTalkApps);
+                            adaptiveCardData = AdaptiveCardsHelper.CreateSelectApplicationListAdaptiveCard(apps);
 
                             await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken: cancellationToken);
                             break;
 
                         case "gethosts":
-                            string hostList = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetHosts.json");
-                            List<Host> hosts = JsonConvert.DeserializeObject<List<Host>>(hostList);
+                            //Check if the Hosts were queried first. If the accessor contains the list then we do not call Logic App
+                            //And we save the state. Else we get the host form the State.
+                            
+                            List<Host> hosts = await _accessors.HostState.GetAsync(stepContext.Context, ()=> new List<Host>(), cancellationToken);
 
-                            await _accessors.HostState.SetAsync(stepContext.Context, hosts, cancellationToken);
-                            await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
-
+                            if(hosts.Count ==0 || hosts == null)
+                            {
+                                string hostList = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetHosts.json");
+                                hosts = JsonConvert.DeserializeObject<List<Host>>(hostList);
+                                await _accessors.HostState.SetAsync(stepContext.Context, hosts, cancellationToken);
+                                await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
+                            }
                             adaptiveCardData = AdaptiveCardsHelper.CreateGetHostsAdaptiveCard(hosts);
 
                             await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
                             await stepContext.Context.SendActivityAsync
-                            (DialogHelpers.CreateReply(stepContext.Context, string.Format(Constants.AdaptiveCardPath, 
-                            Constants.AdaptiveCards.OperationsMessage.ToString()) ,true), cancellationToken);
+                            (DialogHelpers.CreateReply(stepContext.Context, 
+                            string.Format(Constants.AdaptiveCardPath, (isFeedbackProvided ? Constants.AdaptiveCards.OperationMessageNoFB.ToString() : Constants.AdaptiveCards.OperationsMessage.ToString())) 
+                             ,true), cancellationToken);
                             break;
 
+                        
+
                         case "feedback":
-                            adaptiveCardData = string.Format(Constants.AdaptiveCardPath, Constants.AdaptiveCards.FeedBackCard.ToString());
                             
+                            adaptiveCardData = string.Format(Constants.AdaptiveCardPath, Constants.AdaptiveCards.FeedBackCard.ToString());
+
                             await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, true), cancellationToken: cancellationToken);
-                            await stepContext.Context.SendActivityAsync
-                            (DialogHelpers.CreateReply(stepContext.Context, string.Format(Constants.AdaptiveCardPath, 
-                            Constants.AdaptiveCards.OperationsMessage.ToString()) ,true), cancellationToken);
+                            //await stepContext.Context.SendActivityAsync
+                            // (DialogHelpers.CreateReply(stepContext.Context, 
+                            // string.Format(Constants.AdaptiveCardPath, (isFeedbackProvided ? Constants.AdaptiveCards.OperationMessageNoFB.ToString() : Constants.AdaptiveCards.OperationsMessage.ToString())) 
+                            //  ,true), cancellationToken);
                             break;
                         
                         default:
                             await stepContext.Context.SendActivityAsync
-                            (DialogHelpers.CreateReply(stepContext.Context, string.Format(Constants.AdaptiveCardPath, 
-                            Constants.AdaptiveCards.OperationsMessage.ToString()) ,true), cancellationToken);
+                            (DialogHelpers.CreateReply(stepContext.Context, 
+                            string.Format(Constants.AdaptiveCardPath, (isFeedbackProvided ? Constants.AdaptiveCards.OperationMessageNoFB.ToString() : Constants.AdaptiveCards.OperationsMessage.ToString())) 
+                             ,true), cancellationToken);
                             break;
                     }
                 }
@@ -279,27 +296,66 @@ namespace BizTalkAdminBot
                 if(System.Convert.ToBoolean(token["postback"].Value<string>()))
                 {
                     JToken commandToken = JToken.Parse(stepContext.Context.Activity.Value.ToString());
-                    string command = GenericHelpers.ParseCommand(commandToken);
-                    string adaptiveCardData;
+                    string command = GenericHelpers.ParseToken(commandToken, "command");
+                    string adaptiveCardData = string.Empty;
+                    string applicationName = string.Empty;
 
                     switch(command)
                     {
                         case "getorchbyapp":
-                            
-                            string sampleOrchList = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetOrchestrations.json");
-                            List<Orchestration> orchestrations= JsonConvert.DeserializeObject<List<Orchestration>>(sampleOrchList);
+                            // Check if the Orchestration list is available in the Irchestration State in Accessors.
+                            //If the list is there, we will not call the Logic APp else we call the Logic APp and save the 
+                            //Orchestration List in the Orchestration State.
 
-                            string getOrchJson = AdaptiveCardsHelper.CreateGetOrchestrationsAdaptiveCard(orchestrations, "ConfigureHTTPReceiveUsingBTDF");
-                            adaptiveCardData = AdaptiveCardsHelper.CreateGetOrchestrationsAdaptiveCard(orchestrations, "ConfigureHTTPReceiveUsingBTDF");
+                            List<Orchestration> orchestrations = await _accessors.OrchestrationState.GetAsync(stepContext.Context, () => new List<Orchestration>(), cancellationToken );
+
+                            if(orchestrations.Count == 0 || orchestrations == null)
+                            {
+                                string sampleOrchList = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetOrchestrations.json");
+                                orchestrations= JsonConvert.DeserializeObject<List<Orchestration>>(sampleOrchList);
+                                await _accessors.OrchestrationState.SetAsync(stepContext.Context, orchestrations, cancellationToken);
+                                await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
+
+                            }
+
+                            applicationName = commandToken["applicationChoiceSet"].Value<string>();
+                            adaptiveCardData = AdaptiveCardsHelper.CreateGetOrchestrationsAdaptiveCard(orchestrations.Where(x => x.ApplicationName == applicationName).ToList(), applicationName);
                             
                             await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
                             break;
 
+                        case "getsendportsbyapp":
+                            //Check if the Send Ports are avaiable in the SendPOrtS STate using the accessors, if they are not, call the Logic APp to
+                            //Query the result
+                            List<SendPort> sendPorts = await _accessors.SendPortState.GetAsync(stepContext.Context, () => new List<SendPort>(), cancellationToken);
+
+                            if(sendPorts.Count == 0 || sendPorts == null)
+                            {
+                                BizTalkOperationApiHelper apiHelper = new BizTalkOperationApiHelper("getsendportsbyapp");
+                                sendPorts = await apiHelper.GetSendPortsAsync();
+
+                                //save the list into SendPort State using Accessors
+                                await _accessors.SendPortState.SetAsync(stepContext.Context, sendPorts, cancellationToken);
+                                await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
+
+                            }
+
+                            applicationName = commandToken["applicationChoiceSet"].Value<string>();
+                            adaptiveCardData = AdaptiveCardsHelper.CreateGetSendPortsByAppAdaptiveCard(sendPorts, applicationName);
+                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
+                            break;
+
                         case "feedback":
+                            //Save the state that the user has provided the feedback. If Saved, this case will not executed again in the same session.
+                            if(!isFeedbackProvided)
+                            {
+                                await _accessors.FeedbackState.SetAsync(stepContext.Context, true, cancellationToken);
+                                await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
+                                isFeedbackProvided = true;
+
+
+                            }
                             await stepContext.Context.SendActivityAsync("Thank You for the feedback.");
-                            await stepContext.Context.SendActivityAsync
-                            (DialogHelpers.CreateReply(stepContext.Context, string.Format(Constants.AdaptiveCardPath, 
-                            Constants.AdaptiveCards.OperationsMessage.ToString()) ,true), cancellationToken);
                             break;
 
                         default:
@@ -307,9 +363,10 @@ namespace BizTalkAdminBot
                             break;
                             
                     }
-                    await stepContext.Context.SendActivityAsync
-                            (DialogHelpers.CreateReply(stepContext.Context, string.Format(Constants.AdaptiveCardPath, 
-                            Constants.AdaptiveCards.OperationsMessage.ToString()) ,true), cancellationToken);
+                   await stepContext.Context.SendActivityAsync
+                            (DialogHelpers.CreateReply(stepContext.Context, 
+                            string.Format(Constants.AdaptiveCardPath, (isFeedbackProvided ? Constants.AdaptiveCards.OperationMessageNoFB.ToString() : Constants.AdaptiveCards.OperationsMessage.ToString())) 
+                             ,true), cancellationToken);
                   
 
                 }

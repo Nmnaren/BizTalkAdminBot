@@ -60,6 +60,7 @@
         {
             ErrorMessage,
             FeedBackCard,
+            OperationMessageNoFB,
             HelpMessage,
             OperationsMessage,
             SignOutMessage,
