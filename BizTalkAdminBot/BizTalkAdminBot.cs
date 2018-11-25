@@ -196,9 +196,11 @@ namespace BizTalkAdminBot
         {
             //Check if the User has already provided the feedback, if yes, then do not show the FeedBack card again.
                 var isFeedbackProvided = await _accessors.FeedbackState.GetAsync(stepContext.Context, ()=> false, cancellationToken);
+            BizTalkOperationApiHelper apiHelper;
+            List<Application> applications = new List<Application>();
 
             //This works with only the ImBack type events sent by the emulator
-            if(stepContext.Result != null)
+            if (stepContext.Result != null)
             {
                 var tokenResponse = stepContext.Result as TokenResponse;
 
@@ -213,18 +215,18 @@ namespace BizTalkAdminBot
                     switch(command)
                     {
                         case "getallapplications":
-                            //BizTalkOperationApiHelper apiHelper = new BizTalkOperationApiHelper("getallapplications");
+                            apiHelper = new BizTalkOperationApiHelper("getallapplications");
 
-                            //List<Application> applications = await apiHelper.GetApplicationsAsync();
-                            string sampleAppListJson = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplications.json");
-                            List<Application> bizTalkApplications= JsonConvert.DeserializeObject<List<Application>>(sampleAppListJson);
+                            applications = await apiHelper.GetApplicationsAsync();
+                            //string sampleAppListJson = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplications.json");
+                            //List<Application> bizTalkApplications= JsonConvert.DeserializeObject<List<Application>>(sampleAppListJson);
                             
                             //Save the list of application object in the memory so as to see if the result was queried during the same session.
                             //This saves the communication with the Logic App thus saving the number of round trips
-                            await _accessors.ApplicationState.SetAsync(stepContext.Context, bizTalkApplications, cancellationToken: cancellationToken);
+                            await _accessors.ApplicationState.SetAsync(stepContext.Context, applications, cancellationToken: cancellationToken);
                             await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
 
-                            adaptiveCardData = AdaptiveCardsHelper.CreateGetApplicationsAdaptiveCard(bizTalkApplications);
+                            adaptiveCardData = AdaptiveCardsHelper.CreateGetApplicationsAdaptiveCard(applications);
 
                             await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken: cancellationToken);
                             await stepContext.Context.SendActivityAsync
@@ -239,18 +241,18 @@ namespace BizTalkAdminBot
                             //Check the accessors to check if the ApplicationState contains a list of the application, if yes select it else, query the details from
                             // On premises BizTalk System. This is done to avoid fetching the applications multiple times.
 
-                            var apps = await _accessors.ApplicationState.GetAsync(stepContext.Context, () => new List<Application>(), cancellationToken: cancellationToken);
+                            applications = await _accessors.ApplicationState.GetAsync(stepContext.Context, () => new List<Application>(), cancellationToken: cancellationToken);
                             
-                            if(apps.Count == 0 || apps == null)
+                            if(applications.Count == 0 || applications == null)
                             {
-                                 //BizTalkOperationApiHelper apiHelper = new BizTalkOperationApiHelper("getallapplications");
-                                 //List<Application> applications = await apiHelper.GetApplicationsAsync();
-                                 string appListJson = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplications.json");
-                                 apps = JsonConvert.DeserializeObject<List<Application>>(appListJson);
+                                 apiHelper = new BizTalkOperationApiHelper("getallapplications");
+                                 applications = await apiHelper.GetApplicationsAsync();
+                                 //string appListJson = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetApplications.json");
+                                 //apps = JsonConvert.DeserializeObject<List<Application>>(appListJson);
 
                              }
                             
-                            adaptiveCardData = AdaptiveCardsHelper.CreateSelectApplicationListAdaptiveCard(apps);
+                            adaptiveCardData = AdaptiveCardsHelper.CreateSelectApplicationListAdaptiveCard(applications);
 
                             await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken: cancellationToken);
                             break;
@@ -318,7 +320,7 @@ namespace BizTalkAdminBot
                     string command = GenericHelpers.ParseToken(commandToken, "command");
                     string adaptiveCardData = string.Empty;
                     string applicationName = string.Empty;
-                    BizTalkOperationApiHelper apiHelper;
+
 
                     switch(command)
                     {

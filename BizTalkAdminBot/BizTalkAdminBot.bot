@@ -1,15 +1,24 @@
-﻿{
-  "name": "BizTalkAdminBot",
-  "services": [
-    {
-      "type": "endpoint",
-      "name": "development",
-      "endpoint": "http://localhost:3978/api/messages",
-      "appId": "8ddbff06-1a48-48e5-86a9-d44b069fbf3c",
-      "appPassword": "dhZR189[{xmgyqSBNDA49|@",
-      "id": "1"
-    }
-  ],
-  "padlock": "",
-  "version": "2.0"
+{
+    "name": "BizTalkAdminBot.bot",
+    "description": "",
+    "services": [
+        {
+            "type": "endpoint",
+            "name": "development",
+            "endpoint": "http://localhost:3978/api/messages",
+            "appId": "8ddbff06-1a48-48e5-86a9-d44b069fbf3c",
+            "appPassword": "KLHpW0AmkRjhLyL4ldLXSQ==!n0ibAg6vN1PZkdbsGpcqxYJgu612aTfLHL0XoCxtRzk=",
+            "id": "15"
+        },
+        {
+            "type": "endpoint",
+            "name": "production",
+            "appId": "8ddbff06-1a48-48e5-86a9-d44b069fbf3c",
+            "appPassword": "Htp28CpeZSk1yXk81E6KzA==!XIj30HEHoViJe0vQrWPHdWFp8joqzQf0p2gMAIkxU/c=",
+            "endpoint": "https://biztalkadminbot.azurewebsites.net/api/messages",
+            "id": "250"
+        }
+    ],
+    "padlock": "LOGCPV2998Ffux3PS6vVCw==!eAuj6chYTysTzp4Pc18VM011I6bTUJs4mnASIYYwgpNHPL3GwtAA2RMOXAuvd0hr",
+    "version": "2.0"
 }

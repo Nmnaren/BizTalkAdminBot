@@ -43,6 +43,9 @@
     <Content Update="wwwroot\Resources\AdaptiveCards\HelpMessage.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Update="wwwroot\Resources\AdaptiveCards\OperationMessageNoFB.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="wwwroot\Resources\AdaptiveCards\OperationsMessage.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
