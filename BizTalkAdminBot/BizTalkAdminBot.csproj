@@ -58,6 +58,12 @@
     <Content Update="wwwroot\Resources\Images\BizMan.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Update="SampleMessages\GetHosts.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+     <Content Update="SampleMessages\GetOrchestrations.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 
