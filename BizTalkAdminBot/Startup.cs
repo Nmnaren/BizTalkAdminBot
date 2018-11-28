@@ -161,6 +161,8 @@ namespace BizTalkAdminBot
 
                 return accessors;
             });
+
+            services.AddSingleton<IConfiguration>(Configuration);
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
