@@ -8,43 +8,44 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace BizTalkAdminBot.Helpers
 {
     public class BlobHelper
     {
         private IConfiguration _configuration;
+
         public BlobHelper(IConfiguration configuration)
         {
             _configuration = configuration;
 
         }
 
-        public bool UploadReportToBlob(string report, string reportName, out string blobName)
+        public async Task<string> UploadReportToBlob(string report, string reportName)
         {
+        
             string blobAccountKey = _configuration["blobAccountKey"].ToString();
+            string blobAccount = _configuration["storageAccount"].ToString();
 
-            string blobConnectionString = string.Format(Constants.BlobConnectionString, blobAccountKey);
+            string blobConnectionString = string.Format(Constants.BlobConnectionString, blobAccount, blobAccountKey);
 
             CloudStorageAccount account = CloudStorageAccount.Parse(blobConnectionString);
 
             CloudBlobClient client = account.CreateCloudBlobClient();
 
             CloudBlobContainer container = client.GetContainerReference(Constants.BlobContainerName);
-            container.CreateIfNotExistsAsync();
+            await container.CreateIfNotExistsAsync();
 
-            blobName = string.Format("{0}_{1}", reportName, Guid.NewGuid().ToString());
+            string blobName = string.Format("{0}_{1}", reportName, Guid.NewGuid().ToString());
 
             CloudBlockBlob blob = container.GetBlockBlobReference(blobName);
-            //blob.Properties.ContentType =""
+            blob.Properties.ContentType = "text/html";
             
-            byte[] byteArray = Encoding.ASCII.GetBytes( report );
-            MemoryStream stream = new MemoryStream( byteArray );
+            await blob.UploadTextAsync(report);
 
-            return true;
-
-            
-
+            return blobName;
         }
 
 

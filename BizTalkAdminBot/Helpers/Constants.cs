@@ -92,7 +92,7 @@
 
         public const string NotFoundMessage = "Sorry, the Search for {} did not yeild any result.";
 
-        public const string BlobConnectionString = @"DefaultEndpointsProtocol=https;AccountName=azurestudygroup87ca;AccountKey={0};EndpointSuffix=core.windows.net";
+        public const string BlobConnectionString = @"DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix=core.windows.net";
 
         public const string BlobContainerName = "biztalkadminbotcommon";
 

@@ -13,6 +13,7 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using BizTalkAdminBot.Helpers;
 using BizTalkAdminBot.Models;
+using Microsoft.Extensions.Configuration;
 #endregion
 
 #region  namespace
@@ -23,10 +24,12 @@ namespace BizTalkAdminBot
     {
         private readonly BizTalkAdminBotAccessors _accessors;
 
+        private readonly IConfiguration _configuration;
+
         private readonly DialogSet _dialogs;
 
         //Constructor Through which the accessors get injected at the StartUp
-        public BizTalkAdminBot(BizTalkAdminBotAccessors accessors)
+        public BizTalkAdminBot(BizTalkAdminBotAccessors accessors, IConfiguration configuration)
         {
             //Connection Name is required to enable the Bot to connect to service providers through OAuth
             if(string.IsNullOrWhiteSpace(Constants.OAuthConnectionName))
@@ -35,6 +38,8 @@ namespace BizTalkAdminBot
             }
 
                 _accessors = accessors ?? throw new ArgumentNullException(nameof(accessors));
+
+                _configuration = configuration ?? throw new ArgumentException(nameof(configuration));
 
                 _dialogs = new DialogSet(_accessors.ConversationDialogState);
                 _dialogs.Add(DialogHelpers.OAuthPrompt(Constants.OAuthConnectionName));
@@ -294,6 +299,9 @@ namespace BizTalkAdminBot
                             apiHelper = new BizTalkOperationApiHelper("getsuspendedinstances");
                             List<Instance> instances = await apiHelper.GetInstancesAsync();
                             
+                            //Create a html report and uplod the blob to the storage account
+                            BlobHelper blobHelper = new BlobHelper(_configuration);
+                            string blobName = await blobHelper.UploadReportToBlob("", "");
                             adaptiveCardData = AdaptiveCardsHelper.CreateGetSuspendedInstancesAdaptiveCard(instances);
 
                             await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);

@@ -578,6 +578,15 @@ namespace BizTalkAdminBot.Helpers
             AdaptiveCard adaptiveCard = new AdaptiveCard();
             adaptiveCard.Body.Add(topLevelColumnSet);
             adaptiveCard.Body.Add(suspendedInstancesColumnSet);
+            adaptiveCard.Actions = new List<AdaptiveAction>()
+            {
+                new AdaptiveOpenUrlAction
+                {
+                    Id = "detailedReport",
+                    Url= new Uri("http://localhost/{0}"),
+                    Title = "Click To View Detail Report"
+                }
+            };
             string adaptiveCardJson = adaptiveCard.ToJson();
             adaptiveCardJson = RenderStaticImage(adaptiveCardJson, Constants.BizManDummyUrl, Constants.BizManImagePath);
             return adaptiveCardJson;

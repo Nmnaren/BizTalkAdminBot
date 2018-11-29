@@ -8,6 +8,7 @@
     using System.IO;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
+    using System.Text;
     #endregion
 
     /// <summary>
@@ -61,6 +62,16 @@
 
             return value;
         }
+
+        // public static string GetReportHtml<T>(IEnumerable<T> list, string ReportDetails, params Func<T, object>[] columns)
+        // {
+        //     StringBuilder sb = new StringBuilder("<html><h1>");
+        //     sb.Append(ReportDetails);
+        //     sb.Append("</h1>");
+
+        //     sb.Append("</html>");
+
+        // }
 
 
 
