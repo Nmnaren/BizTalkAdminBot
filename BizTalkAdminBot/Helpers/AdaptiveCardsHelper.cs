@@ -473,6 +473,118 @@ namespace BizTalkAdminBot.Helpers
 
         }
 
+        public static string CreateGetSuspendedInstancesAdaptiveCard(List<Instance> instances)
+        {
+            #region TopLevelColumn
+            AdaptiveColumnSet topLevelColumnSet = CreateTopLevelColumnSet();
+            #endregion
+
+            #region AdapticeHostColumnSet
+
+            AdaptiveColumnSet suspendedInstancesColumnSet = new AdaptiveColumnSet()
+            {
+                Id = "suspenedInstancesColumnSet",
+                Separator = true,
+                Spacing = AdaptiveSpacing.Default,
+
+            };
+
+            List<AdaptiveElement> applicationTextBlocks = new List<AdaptiveElement>()
+            {
+                new AdaptiveTextBlock()
+                {
+                    Id = "applicationNameStatic",
+                    HorizontalAlignment = AdaptiveHorizontalAlignment.Left,
+                    Separator= true,
+                    Size = AdaptiveTextSize.Default,
+                    Text = "Application Name",
+                    Color = AdaptiveTextColor.Default,
+                    Weight = AdaptiveTextWeight.Bolder,
+                }
+            };
+
+
+            List<AdaptiveElement> countTextBlocks = new List<AdaptiveElement>()
+            {
+                new AdaptiveTextBlock()
+                {
+                    Id = "CountStatic",
+                    HorizontalAlignment = AdaptiveHorizontalAlignment.Right,
+                    Separator = true,
+                    Size = AdaptiveTextSize.Default,
+                    Text = "Total Count",
+                    Color = AdaptiveTextColor.Default,
+                    Weight = AdaptiveTextWeight.Bolder
+                }
+            };
+
+            var query = instances.GroupBy(x => x.Application).Select( y => new {applicattion = y.Key, count = y.Count()});
+
+            foreach(var item in query)
+            {
+                AdaptiveTextBlock applicationTextBlock = new AdaptiveTextBlock()
+                {
+                    Id = item.applicattion,
+                    HorizontalAlignment = AdaptiveHorizontalAlignment.Left,
+                    Separator = true,
+                    Size = AdaptiveTextSize.Default,
+                    Text = item.applicattion,
+                    Color = AdaptiveTextColor.Default,
+                    Weight = AdaptiveTextWeight.Default
+
+                };
+                AdaptiveTextBlock countTextBlock = new AdaptiveTextBlock()
+                {
+                    Id = string.Format("{0}_{1}", item.applicattion, item.count),
+                    HorizontalAlignment = AdaptiveHorizontalAlignment.Right,
+                    Separator = true,
+                    Size = AdaptiveTextSize.Default,
+                    Text = System.Convert.ToString(item.count),
+                    Color = AdaptiveTextColor.Default,
+                    Weight = AdaptiveTextWeight.Default,
+
+                };
+                applicationTextBlocks.Add(applicationTextBlock);
+                countTextBlocks.Add(countTextBlock);
+            }
+
+            AdaptiveColumn applicationColumn = new AdaptiveColumn()
+            {
+                Id = "applicationListColumn",
+                Items = applicationTextBlocks,
+                Separator = true,
+                Spacing = AdaptiveSpacing.Default,
+                Width = AdaptiveColumnWidth.Stretch
+
+            };
+
+            AdaptiveColumn countColumn = new AdaptiveColumn()
+            {
+                Id = "countListColumn",
+                Items = countTextBlocks,
+                Separator = true,
+                Spacing = AdaptiveSpacing.Default,
+                Width = AdaptiveColumnWidth.Auto
+            };
+
+            suspendedInstancesColumnSet.Columns = new List<AdaptiveColumn>()
+            {
+                applicationColumn,
+                countColumn
+            };
+
+            #endregion
+
+            AdaptiveCard adaptiveCard = new AdaptiveCard();
+            adaptiveCard.Body.Add(topLevelColumnSet);
+            adaptiveCard.Body.Add(suspendedInstancesColumnSet);
+            string adaptiveCardJson = adaptiveCard.ToJson();
+            adaptiveCardJson = RenderStaticImage(adaptiveCardJson, Constants.BizManDummyUrl, Constants.BizManImagePath);
+            return adaptiveCardJson;
+
+
+        }
+
         #region CommonMethods
 
         /// <summary>

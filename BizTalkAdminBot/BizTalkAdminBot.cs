@@ -289,6 +289,18 @@ namespace BizTalkAdminBot
                              ,true), cancellationToken);
                             break;
 
+                        case "getsuspendedinstances":
+
+                            apiHelper = new BizTalkOperationApiHelper("getsuspendedinstances");
+                            List<Instance> instances = await apiHelper.GetInstancesAsync();
+                            
+                            adaptiveCardData = AdaptiveCardsHelper.CreateGetSuspendedInstancesAdaptiveCard(instances);
+
+                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
+
+                            break;
+
+
                         
 
                         case "feedback":

@@ -36,6 +36,7 @@ namespace BizTalkAdminBot.Helpers
             blobName = string.Format("{0}_{1}", reportName, Guid.NewGuid().ToString());
 
             CloudBlockBlob blob = container.GetBlockBlobReference(blobName);
+            //blob.Properties.ContentType =""
             
             byte[] byteArray = Encoding.ASCII.GetBytes( report );
             MemoryStream stream = new MemoryStream( byteArray );
