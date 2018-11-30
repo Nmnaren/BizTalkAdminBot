@@ -52,6 +52,12 @@
             PartiallyStarted,
             Stopped
         }
+
+        public enum InstanceStatus
+        {
+            Suspended
+            
+        }
         
         /// <summary>
         /// Enumeration Holding the names of the Static adaptive cards
@@ -95,6 +101,8 @@
         public const string BlobConnectionString = @"DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix=core.windows.net";
 
         public const string BlobContainerName = "biztalkadminbotcommon";
+
+        public const string ReportBaseUrl = "https://{0}.blob.core.windows.net/biztalkadminbotcommon/{1}";
 
     }
 }

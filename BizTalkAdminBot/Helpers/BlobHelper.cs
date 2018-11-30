@@ -30,7 +30,7 @@ namespace BizTalkAdminBot.Helpers
 
         }
 
-        public async Task<string> UploadReportToBlob(string report, string reportName)
+        public async Task<string> UploadReportToBlobAsync(string report, string reportName)
         {
             string blobConnectionString = CreateConnectionString();
 
@@ -51,7 +51,7 @@ namespace BizTalkAdminBot.Helpers
             return blobName;
         }
 
-        public async Task<bool> DeleteReportBlob(string reportName)
+        public async Task<bool> DeleteReportBlobAsync(string reportName)
         {
             string blobConnectionString = CreateConnectionString();
             CloudStorageAccount account = CloudStorageAccount.Parse(blobConnectionString);

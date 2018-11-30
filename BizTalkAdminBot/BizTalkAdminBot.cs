@@ -28,6 +28,9 @@ namespace BizTalkAdminBot
 
         private readonly DialogSet _dialogs;
 
+        private readonly string _storageAccountKey;
+        
+
         //Constructor Through which the accessors get injected at the StartUp
         public BizTalkAdminBot(BizTalkAdminBotAccessors accessors, IConfiguration configuration)
         {
@@ -40,6 +43,8 @@ namespace BizTalkAdminBot
                 _accessors = accessors ?? throw new ArgumentNullException(nameof(accessors));
 
                 _configuration = configuration ?? throw new ArgumentException(nameof(configuration));
+
+                _storageAccountKey = _configuration["storageAccount"].ToString();
 
                 _dialogs = new DialogSet(_accessors.ConversationDialogState);
                 _dialogs.Add(DialogHelpers.OAuthPrompt(Constants.OAuthConnectionName));
@@ -148,8 +153,24 @@ namespace BizTalkAdminBot
                     await _accessors.OrchestrationState.DeleteAsync(turnContext, cancellationToken);
                     await _accessors.SendPortState.DeleteAsync(turnContext, cancellationToken);
                     await _accessors.FeedbackState.DeleteAsync(turnContext, cancellationToken);
-                    await _accessors.UserState.SaveChangesAsync(turnContext, cancellationToken: cancellationToken);
                     
+
+                    List<string> reports = await _accessors.Reports.GetAsync(turnContext, () => new List<string>(), cancellationToken);
+                    
+                    await _accessors.Reports.DeleteAsync(turnContext, cancellationToken: cancellationToken);
+                    await _accessors.UserState.SaveChangesAsync(turnContext, cancellationToken: cancellationToken);
+
+                    //If Get Suspended/Tracked Instances operation was run, delete the blobs in the storage account
+                    if(reports.Count() >0)
+                    {
+                        BlobHelper blobHelper = new BlobHelper(_configuration);
+                        
+                        foreach(string report in reports)
+                        {
+                            await blobHelper.DeleteReportBlobAsync(report);
+                        }
+
+                    }
                     break;
 
                 case "help": 
@@ -203,6 +224,8 @@ namespace BizTalkAdminBot
                 var isFeedbackProvided = await _accessors.FeedbackState.GetAsync(stepContext.Context, ()=> false, cancellationToken);
             BizTalkOperationApiHelper apiHelper;
             List<Application> applications = new List<Application>();
+            List<string> reports = new List<string>();
+            BlobHelper blobHelper;
 
             //This works with only the ImBack type events sent by the emulator
             if (stepContext.Result != null)
@@ -298,13 +321,42 @@ namespace BizTalkAdminBot
 
                             apiHelper = new BizTalkOperationApiHelper("getsuspendedinstances");
                             List<Instance> instances = await apiHelper.GetInstancesAsync();
-                            
-                            //Create a html report and uplod the blob to the storage account
-                            BlobHelper blobHelper = new BlobHelper(_configuration);
-                            string blobName = await blobHelper.UploadReportToBlob("", "");
-                            adaptiveCardData = AdaptiveCardsHelper.CreateGetSuspendedInstancesAdaptiveCard(instances);
 
-                            await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
+                            if(instances.Count > 0)
+                            {
+                                List<Instance> suspendedInstances = instances.Where(x => x.InstanceStatus ==Constants.InstanceStatus.Suspended.ToString()).ToList();
+
+                                if(suspendedInstances.Count() > 0)
+                                {
+                                    string report = GenericHelpers.GetSuspendedInstancesReport(suspendedInstances);
+
+                                    blobHelper = new BlobHelper(_configuration);
+                                    string blobName = await blobHelper.UploadReportToBlobAsync(report, "SuspendedInstances");
+                                    adaptiveCardData = AdaptiveCardsHelper.CreateGetSuspendedInstancesAdaptiveCard(suspendedInstances);
+                                    adaptiveCardData = adaptiveCardData.Replace(Constants.BizManDummyUrl, string.Format(Constants.ReportBaseUrl, _storageAccountKey, blobName));
+                                    await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
+
+                                    reports = await _accessors.Reports.GetAsync(stepContext.Context, () => new List<string>(), cancellationToken);
+                                    
+                                    //If the reports does not contain the generated blob name, then add and save the list to the accessors.
+                                    if(!reports.Contains(blobName))
+                                    {
+                                        reports.Add(blobName);
+                                        await _accessors.Reports.SetAsync(stepContext.Context, reports, cancellationToken);
+                                        await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
+                                    }
+                                    
+                                }
+                                else
+                                {
+                                    await stepContext.Context.SendActivityAsync("Sorry No Suspended Instances were found on the environment", cancellationToken : cancellationToken);
+                                }
+                                
+                            }
+                            else
+                            {
+                                await stepContext.Context.SendActivityAsync("Sorry No Instances were found on the environment", cancellationToken : cancellationToken);
+                            }
 
                             break;
 

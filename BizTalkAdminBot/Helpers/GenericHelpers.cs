@@ -1,6 +1,4 @@
-﻿namespace BizTalkAdminBot.Helpers
-{
-    #region References
+﻿    #region References
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -9,7 +7,11 @@
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System.Text;
+    using BizTalkAdminBot.Models;
     #endregion
+namespace BizTalkAdminBot.Helpers
+{
+
 
     /// <summary>
     /// Class used to house the helper methods which can be used across the code.
@@ -63,17 +65,26 @@
             return value;
         }
 
-        // public static string GetReportHtml<T>(IEnumerable<T> list, string ReportDetails, params Func<T, object>[] columns)
-        // {
-        //     StringBuilder sb = new StringBuilder("<html><h1>");
-        //     sb.Append(ReportDetails);
-        //     sb.Append("</h1>");
+        public static string GetSuspendedInstancesReport(List<Instance> instances)
+        {
+            string skeletonReport = ReadTextFromFile(@".\wwwroot\Resources\Reports\SuspendedInstancesReport.htm");
 
-        //     sb.Append("</html>");
+            StringBuilder sb = new StringBuilder();
 
-        // }
+            foreach(Instance instance in instances)
+            {
+                sb.Append("<tr>");
+                sb.AppendFormat("{0}{1}{2}", "<td style>", instance.ServiceType,"</td>");
+                sb.AppendFormat("{0}{1}{2}", "<td style>", instance.Class,"</td>");
+                sb.AppendFormat("{0}{1}{2}", "<td style>", instance.CreationTime.ToShortDateString(),"</td>");
+                sb.AppendFormat("{0}{1}{2}", "<td width=70%>", instance.ErrorDescription,"</td>");
+                sb.Append("</tr>");
+            }
 
+            return string.Format(skeletonReport, System.Convert.ToString(sb));
+             
+        }
 
-
+        
     }
 }
