@@ -53,6 +53,9 @@
             Stopped
         }
 
+        /// <summary>
+        /// Enumeration Holding the statuses of the Service instance
+        /// </summary>
         public enum InstanceStatus
         {
             Suspended
@@ -94,14 +97,32 @@
         /// </summary>
         public const string BizManImagePath = @".\wwwroot\Resources\Images\BizMan.png";
 
+        /// <summary>
+        /// Relative path to the adaptive cards folder
+        /// </summary>
+        /// <value></value>
         public const string AdaptiveCardPath = @"wwwroot\Resources\AdaptiveCards\{0}.json";
 
-        public const string NotFoundMessage = "Sorry, the Search for {} did not yeild any result.";
+        /// <summary>
+        /// Message to be sent when the data is not found for the requested operation
+        /// </summary>
+        /// <value></value>
+        public const string NotFoundMessage = "Sorry, the Search for {0} did not yeild any result.";
 
+        /// <summary>
+        /// Connection string for the storage account
+        /// </summary>
+        /// <value></value>
         public const string BlobConnectionString = @"DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix=core.windows.net";
 
+        /// <summary>
+        /// Name of the Container to which the blob will be uploaded
+        /// </summary>
         public const string BlobContainerName = "biztalkadminbotcommon";
 
+        /// <summary>
+        /// Base url for the reports
+        /// </summary>
         public const string ReportBaseUrl = "https://{0}.blob.core.windows.net/biztalkadminbotcommon/{1}";
 
     }

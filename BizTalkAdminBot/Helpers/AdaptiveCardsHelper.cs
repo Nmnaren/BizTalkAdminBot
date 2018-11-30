@@ -14,6 +14,7 @@ namespace BizTalkAdminBot.Helpers
     /// </summary>
     public class AdaptiveCardsHelper
     {
+        #region CreateGetApplicationsAdaptiveCard
         /// <summary>
         /// Create the Adaptive Cards To Display the List of Applications in BizTalk Environment
         /// </summary>
@@ -133,6 +134,10 @@ namespace BizTalkAdminBot.Helpers
             return adaptiveCardJson;
         }
 
+        #endregion
+
+        #region  CreateGetOrchestrationsAdaptiveCard
+
         /// <summary>
         /// Create the Adaptive Card to display the Orchestrations in particular BizTalk application
         /// </summary>
@@ -217,6 +222,10 @@ namespace BizTalkAdminBot.Helpers
 
         }
 
+        #endregion
+
+        #region CreateSelectApplicationListAdaptiveCard
+
         /// <summary>
         /// Create the application list drop down
         /// </summary>
@@ -273,6 +282,10 @@ namespace BizTalkAdminBot.Helpers
             return adaptiveCardJson;
 
         }
+
+        #endregion
+
+        #region CreateGetSendPortsByAppAdaptiveCard
 
         /// <summary>
         /// Create the Adaptive Card to display the Send Ports in particular BizTalk application
@@ -357,6 +370,16 @@ namespace BizTalkAdminBot.Helpers
 
         }
 
+        #endregion
+
+        #region CreateGetHostsAdaptiveCard
+
+
+        /// <summary>
+        /// Create the Adaptive Card to display the Hosts in the BizTalk environment
+        /// </summary>
+        /// <param name="hosts">List of the Hosts in the BizTalk environment</param>
+        /// <returns>Adaptive Card</returns>
         public static string CreateGetHostsAdaptiveCard(List<Host> hosts)
         {
             #region TopLevelColumn
@@ -473,6 +496,15 @@ namespace BizTalkAdminBot.Helpers
 
         }
 
+        #endregion
+
+        #region CreateGetSuspendedInstancesAdaptiveCard
+
+        /// <summary>
+        /// Create the Adaptive Card to display the Suspended instances in the BizTalk environment
+        /// </summary>
+        /// <param name="instances">List of the Suspended instances</param>
+        /// <returns>Adaptive Card</returns>
         public static string CreateGetSuspendedInstancesAdaptiveCard(List<Instance> instances)
         {
             #region TopLevelColumn
@@ -584,7 +616,7 @@ namespace BizTalkAdminBot.Helpers
                 {
                     Id = "detailedReport",
                     Url= new Uri("http://localhost/{0}"),
-                    Title = "Click To View Detail Report"
+                    Title = "Click To View Detailed Report"
                 }
             };
             string adaptiveCardJson = adaptiveCard.ToJson();
@@ -593,6 +625,8 @@ namespace BizTalkAdminBot.Helpers
 
 
         }
+
+        #endregion
 
         #region CommonMethods
 

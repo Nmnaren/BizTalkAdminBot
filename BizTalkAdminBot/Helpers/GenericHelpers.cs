@@ -65,6 +65,11 @@ namespace BizTalkAdminBot.Helpers
             return value;
         }
 
+        /// <summary>
+        /// Generate the Suspeneded Instances report.
+        /// </summary>
+        /// <param name="instances">List of the Suspended Service instances</param>
+        /// <returns>Report HTML in string format</returns>
         public static string GetSuspendedInstancesReport(List<Instance> instances)
         {
             string skeletonReport = ReadTextFromFile(@".\wwwroot\Resources\Reports\SuspendedInstancesReport.htm");
