@@ -61,6 +61,22 @@
             Suspended
             
         }
+
+        /// <summary>
+        /// Enum holding the Operations performed by the Bot
+        /// </summary>
+        public enum Operations
+        {
+            signout,
+            help,
+            getallapplications,
+            getorchbyapp,
+            getsendportsbyapp,
+            gethosts,
+            getsuspendedinstances,
+            feedback
+
+        }
         
         /// <summary>
         /// Enumeration Holding the names of the Static adaptive cards
