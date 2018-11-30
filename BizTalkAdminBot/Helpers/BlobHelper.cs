@@ -8,7 +8,6 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System.IO;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace BizTalkAdminBot.Helpers
@@ -17,19 +16,23 @@ namespace BizTalkAdminBot.Helpers
     {
         private IConfiguration _configuration;
 
+        private string _blobAccountKey;
+
+        private string _storageAccountKey;
+
         public BlobHelper(IConfiguration configuration)
         {
             _configuration = configuration;
+
+            _blobAccountKey = _configuration["blobAccountKey"].ToString();
+
+            _storageAccountKey = _configuration["storageAccount"].ToString();
 
         }
 
         public async Task<string> UploadReportToBlob(string report, string reportName)
         {
-        
-            string blobAccountKey = _configuration["blobAccountKey"].ToString();
-            string blobAccount = _configuration["storageAccount"].ToString();
-
-            string blobConnectionString = string.Format(Constants.BlobConnectionString, blobAccount, blobAccountKey);
+            string blobConnectionString = CreateConnectionString();
 
             CloudStorageAccount account = CloudStorageAccount.Parse(blobConnectionString);
 
@@ -46,6 +49,24 @@ namespace BizTalkAdminBot.Helpers
             await blob.UploadTextAsync(report);
 
             return blobName;
+        }
+
+        public async Task<bool> DeleteReportBlob(string reportName)
+        {
+            string blobConnectionString = CreateConnectionString();
+            CloudStorageAccount account = CloudStorageAccount.Parse(blobConnectionString);
+
+            CloudBlobClient client = account.CreateCloudBlobClient();
+
+            CloudBlobContainer container = client.GetContainerReference(Constants.BlobContainerName);
+            CloudBlockBlob blob = container.GetBlockBlobReference(reportName);
+            return await blob.DeleteIfExistsAsync();
+            
+        }
+
+        private string CreateConnectionString()
+        {
+            return string.Format(Constants.BlobConnectionString, _storageAccountKey, _blobAccountKey);
         }
 
 
