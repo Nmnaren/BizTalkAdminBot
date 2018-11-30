@@ -33,7 +33,9 @@ namespace BizTalkAdminBot
 
         public static readonly string SendPortStateName = $"{nameof(BizTalkAdminBotAccessors)}.SendPortState";
 
-        public static readonly string FeedbackStateName = "${nameof(BizTalkAdminBotAccessors)}.FeedbackState";
+        public static readonly string FeedbackStateName = $"{nameof(BizTalkAdminBotAccessors)}.FeedbackState";
+
+        public static readonly string ReportStateName = $"{nameof(BizTalkAdminBotAccessors)}.ReportStateName";
 
         public IStatePropertyAccessor<DialogState> ConversationDialogState { get; set; }
 
@@ -48,6 +50,8 @@ namespace BizTalkAdminBot
         public IStatePropertyAccessor<List<SendPort>> SendPortState {get; set; } 
 
         public IStatePropertyAccessor<bool> FeedbackState {get; set;}
+
+        public IStatePropertyAccessor<List<string>> Reports {get; set;}
 
         public ConversationState ConversationState { get; }
 

@@ -156,7 +156,8 @@ namespace BizTalkAdminBot
                     OrchestrationState = userState.CreateProperty<List<Orchestration>>(BizTalkAdminBotAccessors.OrchestrationStateName),
                     SendPortState = userState.CreateProperty<List<SendPort>>(BizTalkAdminBotAccessors.SendPortStateName),
                     ConversationDialogState = userState.CreateProperty<DialogState>(BizTalkAdminBotAccessors.DialogStateName),
-                    FeedbackState = userState.CreateProperty<bool>(BizTalkAdminBotAccessors.FeedbackStateName)
+                    FeedbackState = userState.CreateProperty<bool>(BizTalkAdminBotAccessors.FeedbackStateName),
+                    Reports = userState.CreateProperty<List<string>>(BizTalkAdminBotAccessors.ReportStateName)
                 };
 
                 return accessors;
