@@ -357,6 +357,10 @@ namespace BizTalkAdminBot
                             {
                                 await stepContext.Context.SendActivityAsync("Sorry No Instances were found on the environment", cancellationToken : cancellationToken);
                             }
+                            await stepContext.Context.SendActivityAsync
+                            (DialogHelpers.CreateReply(stepContext.Context, 
+                            string.Format(Constants.AdaptiveCardPath, (isFeedbackProvided ? Constants.AdaptiveCards.OperationMessageNoFB.ToString() : Constants.AdaptiveCards.OperationsMessage.ToString())) 
+                             ,true), cancellationToken);
 
                             break;
 
