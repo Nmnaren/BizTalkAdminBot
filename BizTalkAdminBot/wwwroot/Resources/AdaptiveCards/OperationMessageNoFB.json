@@ -67,6 +67,12 @@
             "data": "getallapplications"
         },
         {
+            "type": "Action.Submit",
+            "id": "bc3bd761-e914-4aae-8655-db34b3c31185",
+            "title": "Get Suspended Instances",
+            "data": "getsuspendedinstances"
+        },
+        {
           "type": "Action.Submit",
           "id": "bc3bd761-e914-4aae-8655-db34b3c31182",
           "title": "Sign Out",
