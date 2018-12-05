@@ -75,13 +75,13 @@
         {
             "type": "Action.Submit",
             "id": "bc3bd761-e914-4aae-8655-db34b3c31186",
-            "title": "Enable Send Port",
+            "title": "Start Send Port",
             "data": "startsendport"
         },
         {
             "type": "Action.Submit",
             "id": "bc3bd761-e914-4aae-8655-db34b3c31187",
-            "title": "Enable Send Port",
+            "title": "Stop Send Port",
             "data": "stopsendport"
         },
         {
