@@ -326,7 +326,8 @@ namespace BizTalkAdminBot
 
                             if(instances.Count > 0)
                             {
-                                List<Instance> suspendedInstances = instances.Where(x => x.InstanceStatus ==Constants.InstanceStatus.Suspended.ToString()).ToList();
+                                List<Instance> suspendedInstances = instances.Where(x => x.InstanceStatus ==Constants.InstanceStatus.Suspended.ToString()
+                                 || x.InstanceStatus == Constants.InstanceStatus.SuspendedNotResumable.ToString()).ToList();
 
                                 if(suspendedInstances.Count() > 0)
                                 {
@@ -335,7 +336,7 @@ namespace BizTalkAdminBot
                                     blobHelper = new BlobHelper(_configuration);
                                     string blobName = await blobHelper.UploadReportToBlobAsync(report, "SuspendedInstances");
                                     adaptiveCardData = AdaptiveCardsHelper.CreateGetSuspendedInstancesAdaptiveCard(suspendedInstances);
-                                    adaptiveCardData = adaptiveCardData.Replace(Constants.BizManDummyUrl, string.Format(Constants.ReportBaseUrl, _storageAccountKey, blobName));
+                                    adaptiveCardData = adaptiveCardData.Replace(Constants.ReportDummyUrl, string.Format(Constants.ReportBaseUrl, _storageAccountKey, blobName));
                                     await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
 
                                     reports = await _accessors.Reports.GetAsync(stepContext.Context, () => new List<string>(), cancellationToken);

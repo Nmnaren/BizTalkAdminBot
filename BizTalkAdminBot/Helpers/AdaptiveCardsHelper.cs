@@ -550,24 +550,27 @@ namespace BizTalkAdminBot.Helpers
                 }
             };
 
-            var query = instances.GroupBy(x => x.Application).Select( y => new {applicattion = y.Key, count = y.Count()});
+            var query = instances.GroupBy(x => x.Application).Select( y => new {application = y.Key, count = y.Count()});
 
             foreach(var item in query)
             {
                 AdaptiveTextBlock applicationTextBlock = new AdaptiveTextBlock()
                 {
-                    Id = item.applicattion,
+                    Id = item.application,
                     HorizontalAlignment = AdaptiveHorizontalAlignment.Left,
                     Separator = true,
                     Size = AdaptiveTextSize.Default,
-                    Text = item.applicattion,
+
+                    //Routing Failure Instances do not produce the Application Name in the response
+                    //Hence needs to be hard coded
+                    Text =  !string.IsNullOrEmpty(item.application) ? item.application : "Routing Failure",
                     Color = AdaptiveTextColor.Default,
                     Weight = AdaptiveTextWeight.Default
 
                 };
                 AdaptiveTextBlock countTextBlock = new AdaptiveTextBlock()
                 {
-                    Id = string.Format("{0}_{1}", item.applicattion, item.count),
+                    Id = string.Format("{0}_{1}", item.application, item.count),
                     HorizontalAlignment = AdaptiveHorizontalAlignment.Right,
                     Separator = true,
                     Size = AdaptiveTextSize.Default,
@@ -615,7 +618,7 @@ namespace BizTalkAdminBot.Helpers
                 new AdaptiveOpenUrlAction
                 {
                     Id = "detailedReport",
-                    Url= new Uri("http://localhost/{0}"),
+                    Url= new Uri("http://localhost/{1}"),
                     Title = "Click To View Detailed Report"
                 }
             };
