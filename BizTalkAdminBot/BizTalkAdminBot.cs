@@ -544,7 +544,7 @@ namespace BizTalkAdminBot
                                 //await _accessors.SendPortState.SetAsync(stepContext.Context, sendPorts, cancellationToken);
                                 //await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
                                 applicationName = commandToken["applicationChoiceSet"].Value<string>();
-                                adaptiveCardData = AdaptiveCardsHelper.CreateGetSendPortsByAppAdaptiveCard(sendPorts, applicationName);
+                                adaptiveCardData = AdaptiveCardsHelper.CreateGetSendPortsByAppAdaptiveCard(sendPorts.Where(x => x.ApplicationName == applicationName).ToList(), applicationName);
                                 await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
 
                             }
