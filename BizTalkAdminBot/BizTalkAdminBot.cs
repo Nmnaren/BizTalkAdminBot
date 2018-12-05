@@ -389,9 +389,9 @@ namespace BizTalkAdminBot
                                 await _accessors.SendPortState.SetAsync(stepContext.Context, sendPorts, cancellationToken);
                                 await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
 
-                                if(sendPorts.Where(x => x.Status == "").ToList().Count() > 0)
+                                if(sendPorts.Where(x => x.Status == "Stopped").ToList().Count() > 0)
                                 {
-                                    adaptiveCardData = AdaptiveCardsHelper.CreateSelectSendPortListAdaptiveCard(sendPorts.Where(x => x.Status == "").ToList(), "Please Select a send port to start", "startsendport");
+                                    adaptiveCardData = AdaptiveCardsHelper.CreateSelectSendPortListAdaptiveCard(sendPorts.Where(x => x.Status == "Stopped").ToList(), "Please Select a send port to start", "startsendport");
                                     await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
 
                                 }
@@ -432,9 +432,9 @@ namespace BizTalkAdminBot
                                 await _accessors.SendPortState.SetAsync(stepContext.Context, sendPorts, cancellationToken);
                                 await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
 
-                                if(sendPorts.Where(x => x.Status == "").ToList().Count() > 0)
+                                if(sendPorts.Where(x => x.Status == "Started").ToList().Count() > 0)
                                 {
-                                    adaptiveCardData = AdaptiveCardsHelper.CreateSelectSendPortListAdaptiveCard(sendPorts.Where(x => x.Status == "").ToList(), "Please Select a send port to stop", "stopsendport");
+                                    adaptiveCardData = AdaptiveCardsHelper.CreateSelectSendPortListAdaptiveCard(sendPorts.Where(x => x.Status == "Started").ToList(), "Please Select a send port to stop", "stopsendport");
                                     await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
 
                                 }
