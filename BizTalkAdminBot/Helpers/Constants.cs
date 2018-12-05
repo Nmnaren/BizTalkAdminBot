@@ -141,7 +141,7 @@
         /// </summary>
         public const string ReportBaseUrl = "https://{0}.blob.core.windows.net/biztalkadminbotcommon/{1}";
 
-        public const string LASuccessResponse = "\"status\": \"true\"";
+        public const string LASuccessResponse = "\"status\":\"true\"";
 
     }
 }

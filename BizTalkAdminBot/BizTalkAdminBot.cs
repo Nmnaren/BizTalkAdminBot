@@ -281,7 +281,7 @@ namespace BizTalkAdminBot
 
                              }
                             
-                            adaptiveCardData = AdaptiveCardsHelper.CreateSelectApplicationListAdaptiveCard(applications);
+                            adaptiveCardData = AdaptiveCardsHelper.CreateSelectApplicationListAdaptiveCard(applications, command);
 
                             await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken: cancellationToken);
                             break;
@@ -386,8 +386,8 @@ namespace BizTalkAdminBot
                             }
                             else
                             {
-                                await _accessors.SendPortState.SetAsync(stepContext.Context, sendPorts, cancellationToken);
-                                await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
+                                //await _accessors.SendPortState.SetAsync(stepContext.Context, sendPorts, cancellationToken);
+                                //await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
 
                                 if(sendPorts.Where(x => x.Status == "Stopped").ToList().Count() > 0)
                                 {
@@ -429,8 +429,8 @@ namespace BizTalkAdminBot
                             }
                             else
                             {
-                                await _accessors.SendPortState.SetAsync(stepContext.Context, sendPorts, cancellationToken);
-                                await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
+                                //await _accessors.SendPortState.SetAsync(stepContext.Context, sendPorts, cancellationToken);
+                                //await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
 
                                 if(sendPorts.Where(x => x.Status == "Started").ToList().Count() > 0)
                                 {
@@ -540,8 +540,8 @@ namespace BizTalkAdminBot
                             }
                             else
                             {
-                                await _accessors.SendPortState.SetAsync(stepContext.Context, sendPorts, cancellationToken);
-                                await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
+                                //await _accessors.SendPortState.SetAsync(stepContext.Context, sendPorts, cancellationToken);
+                                //await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
                                 applicationName = commandToken["applicationChoiceSet"].Value<string>();
                                 adaptiveCardData = AdaptiveCardsHelper.CreateGetSendPortsByAppAdaptiveCard(sendPorts, applicationName);
                                 await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);

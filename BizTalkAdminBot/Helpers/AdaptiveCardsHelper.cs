@@ -231,7 +231,7 @@ namespace BizTalkAdminBot.Helpers
         /// </summary>
         /// <param name="applications">List of BizTak application objects</param>
         /// <returns>Adaptive Card Json String</returns>
-        public static string CreateSelectApplicationListAdaptiveCard(List<Application> applications)
+        public static string CreateSelectApplicationListAdaptiveCard(List<Application> applications, string command)
         {
             #region TopLevelColumn
             AdaptiveColumnSet topLevelColumnSet = CreateTopLevelColumnSet();
@@ -271,7 +271,7 @@ namespace BizTalkAdminBot.Helpers
                 {
                     Id = "submit",
                     Title = "Submit",
-                    DataJson = "{\"command\": \"getorchbyapp\"}"
+                    DataJson = "{\"command\":\""  + command + "\"}"
                 }
             };
             
