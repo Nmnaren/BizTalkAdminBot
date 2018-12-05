@@ -67,6 +67,24 @@
             "data": "getallapplications"
         },
         {
+            "type": "Action.Submit",
+            "id": "bc3bd761-e914-4aae-8655-db34b3c31185",
+            "title": "Get Suspended Instances",
+            "data": "getsuspendedinstances"
+        },
+        {
+            "type": "Action.Submit",
+            "id": "bc3bd761-e914-4aae-8655-db34b3c31186",
+            "title": "Enable Send Port",
+            "data": "startsendport"
+        },
+        {
+            "type": "Action.Submit",
+            "id": "bc3bd761-e914-4aae-8655-db34b3c31187",
+            "title": "Enable Send Port",
+            "data": "stopsendport"
+        },
+        {
             "type": "Action.OpenUrl",
             "id": "c4dee2ea-dde4-40c7-b697-e972ccfa1feb",
             "title": "Know More About BizTalk",

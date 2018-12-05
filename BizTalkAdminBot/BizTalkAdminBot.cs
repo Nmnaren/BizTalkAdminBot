@@ -224,6 +224,7 @@ namespace BizTalkAdminBot
                 var isFeedbackProvided = await _accessors.FeedbackState.GetAsync(stepContext.Context, ()=> false, cancellationToken);
             BizTalkOperationApiHelper apiHelper;
             List<Application> applications = new List<Application>();
+            List<SendPort> sendPorts = new List<SendPort>();
             List<string> reports = new List<string>();
             BlobHelper blobHelper;
 
@@ -293,8 +294,9 @@ namespace BizTalkAdminBot
 
                             if(hosts.Count ==0 || hosts == null)
                             {
-                                string hostList = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetHosts.json");
-                                hosts = JsonConvert.DeserializeObject<List<Host>>(hostList);
+                                apiHelper = new BizTalkOperationApiHelper("gethosts");
+                                
+                                hosts = await apiHelper.GetHostsAsync();
                                 
                             }
 
@@ -364,8 +366,90 @@ namespace BizTalkAdminBot
 
                             break;
 
+                        case "startsendport":
+                        //Check if the Send Ports are available in the Accessors, if they are available, we will not query the LA
+                        sendPorts = await _accessors.SendPortState.GetAsync(stepContext.Context, () => new List<SendPort>(), cancellationToken);
 
-                        
+                            if(sendPorts.Count == 0 || sendPorts == null)
+                            {
+                                apiHelper = new BizTalkOperationApiHelper("getsendportsbyapp");
+                                sendPorts = await apiHelper.GetSendPortsAsync();
+
+                                //save the list into SendPort State using Accessors
+                                
+                            }
+
+                            if(sendPorts.Count == 0)
+                            {
+                                await stepContext.Context.SendActivityAsync(string.Format(Constants.NotFoundMessage, "startsendport"), cancellationToken: cancellationToken);
+
+                            }
+                            else
+                            {
+                                await _accessors.SendPortState.SetAsync(stepContext.Context, sendPorts, cancellationToken);
+                                await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
+
+                                if(sendPorts.Where(x => x.Status == "").ToList().Count() > 0)
+                                {
+                                    adaptiveCardData = AdaptiveCardsHelper.CreateSelectSendPortListAdaptiveCard(sendPorts.Where(x => x.Status == "").ToList(), "Please Select a send port to start", "startsendport");
+                                    await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
+
+                                }
+                                else
+                                {
+                                    await stepContext.Context.SendActivityAsync("No Send Port is in Stopped State. Please Slect another option.");
+                                    await stepContext.Context.SendActivityAsync
+                                    (DialogHelpers.CreateReply(stepContext.Context, 
+                                    string.Format(Constants.AdaptiveCardPath, (isFeedbackProvided ? Constants.AdaptiveCards.OperationMessageNoFB.ToString() : Constants.AdaptiveCards.OperationsMessage.ToString())) 
+                                    ,true), cancellationToken);
+                                }
+
+                                
+
+                            }
+                            break;
+
+                        case "stopsendport":
+                        //Check if the Send Ports are available in the Accessors, if they are available, we will not query the LA
+                        sendPorts = await _accessors.SendPortState.GetAsync(stepContext.Context, () => new List<SendPort>(), cancellationToken);
+
+                            if(sendPorts.Count == 0 || sendPorts == null)
+                            {
+                                apiHelper = new BizTalkOperationApiHelper("getsendportsbyapp");
+                                sendPorts = await apiHelper.GetSendPortsAsync();
+
+                                //save the list into SendPort State using Accessors
+                                
+                            }
+
+                            if(sendPorts.Count == 0)
+                            {
+                                await stepContext.Context.SendActivityAsync(string.Format(Constants.NotFoundMessage, "stopsendport"), cancellationToken: cancellationToken);
+
+                            }
+                            else
+                            {
+                                await _accessors.SendPortState.SetAsync(stepContext.Context, sendPorts, cancellationToken);
+                                await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
+
+                                if(sendPorts.Where(x => x.Status == "").ToList().Count() > 0)
+                                {
+                                    adaptiveCardData = AdaptiveCardsHelper.CreateSelectSendPortListAdaptiveCard(sendPorts.Where(x => x.Status == "").ToList(), "Please Select a send port to stop", "stopsendport");
+                                    await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
+
+                                }
+                                else
+                                {
+                                    await stepContext.Context.SendActivityAsync("No Send Port is in Started State. Please Slect another option.");
+                                    await stepContext.Context.SendActivityAsync
+                                    (DialogHelpers.CreateReply(stepContext.Context, 
+                                    string.Format(Constants.AdaptiveCardPath, (isFeedbackProvided ? Constants.AdaptiveCards.OperationMessageNoFB.ToString() : Constants.AdaptiveCards.OperationsMessage.ToString())) 
+                                    ,true), cancellationToken);
+                                }
+
+
+                            }
+                            break;
 
                         case "feedback":
                             
@@ -409,8 +493,9 @@ namespace BizTalkAdminBot
 
                             if(orchestrations.Count == 0 || orchestrations == null)
                             {
-                                string sampleOrchList = GenericHelpers.ReadTextFromFile(@".\SampleMessages\GetOrchestrations.json");
-                                orchestrations= JsonConvert.DeserializeObject<List<Orchestration>>(sampleOrchList);
+                                apiHelper = new BizTalkOperationApiHelper("getorchbyapp");
+                                
+                                orchestrations= await apiHelper.GetOrchestrationsAsync();
                                 
 
                             }
@@ -437,7 +522,7 @@ namespace BizTalkAdminBot
                         case "getsendportsbyapp":
                             //Check if the Send Ports are avaiable in the SendPOrtS STate using the accessors, if they are not, call the Logic APp to
                             //Query the result
-                            List<SendPort> sendPorts = await _accessors.SendPortState.GetAsync(stepContext.Context, () => new List<SendPort>(), cancellationToken);
+                            sendPorts = await _accessors.SendPortState.GetAsync(stepContext.Context, () => new List<SendPort>(), cancellationToken);
 
                             if(sendPorts.Count == 0 || sendPorts == null)
                             {
@@ -462,6 +547,46 @@ namespace BizTalkAdminBot
                                 await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
 
                             }
+                            break;
+
+                        case "startsendport":
+                            
+                            string sendportName = commandToken["sendPortChoiceSet"].Value<string>();
+                            apiHelper = new BizTalkOperationApiHelper("startsendport", sendportName);
+                            bool status = await apiHelper.ChangeSendportStateAsync();
+                            string message = string.Empty;
+                            if(status)
+                            {
+                                message = "Operation Completed Successfully";
+
+                            }
+                            else
+                            {
+                                message = "Operation Failed";
+
+                            }
+
+                            await stepContext.Context.SendActivityAsync(message, cancellationToken: cancellationToken);
+                            break;
+
+                        case "stopsendport":
+                            
+                            string sendport = commandToken["sendPortChoiceSet"].Value<string>();
+                            apiHelper = new BizTalkOperationApiHelper("stopsendport", sendport);
+                            bool opStatus = await apiHelper.ChangeSendportStateAsync();
+                            string responsemessage = string.Empty;
+                            if(opStatus)
+                            {
+                                message = "Operation Completed Successfully";
+
+                            }
+                            else
+                            {
+                                message = "Operation Failed";
+
+                            }
+
+                            await stepContext.Context.SendActivityAsync(message, cancellationToken: cancellationToken);
                             break;
 
                         case "feedback":

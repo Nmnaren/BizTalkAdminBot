@@ -19,11 +19,38 @@ namespace BizTalkAdminBot.Helpers
     {
         private string _operation;
 
+        private string _receiveport;
+
+        private string _receivelocation;
+
+        private string _sendport;
+
         public BizTalkOperationApiHelper(string operation)
         {
             _operation = operation;
+            _receiveport = string.Empty;
+            _receivelocation = string.Empty;
+            _sendport = string.Empty;
+
+        }
+
+        /// <summary>
+        /// Constructor To help the Start/stop of Send port
+        /// </summary>
+        /// <param name="operation">operation Name</param>
+        /// <param name="sendPort">Send Port Name</param>
+        /// <param name="status">Status for Send Port</param>
+        public BizTalkOperationApiHelper(string operation, string sendPort)
+        {
+            _operation = operation;
+            _receivelocation = string.Empty;
+            _receiveport = string.Empty;
+            _sendport = sendPort;
+
         }
         
+        
+
         /// <summary>
         /// Get the List of Applications in the BizTalk environment
         /// </summary>
@@ -92,6 +119,19 @@ namespace BizTalkAdminBot.Helpers
             return sendPorts;
         }
 
+        public async Task<bool> ChangeSendportStateAsync()
+        {
+            bool status = false;
+            string responseJson = await GetOnPremDataAsync();
+            if(responseJson.Contains(Constants.LASuccessResponse))
+            {
+                status = true;    
+            }
+            
+            return status;
+
+        }
+
         /// <summary>
         /// Get the Instances in the BizTalk Environment
         /// </summary>
@@ -141,7 +181,7 @@ namespace BizTalkAdminBot.Helpers
         {
             StringBuilder builder = new StringBuilder();
             builder.Append("{");
-            builder.Append(string.Format(Constants.PostRequest, _operation));
+            builder.Append(string.Format(Constants.PostRequest, _operation, _receiveport, _receivelocation, _sendport));
             builder.Append("}");
 
             return builder.ToString();

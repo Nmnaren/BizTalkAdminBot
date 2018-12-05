@@ -628,6 +628,60 @@ namespace BizTalkAdminBot.Helpers
 
         #endregion
 
+        #region CreateSelectSendPortListAdaptiveCard
+         public static string CreateSelectSendPortListAdaptiveCard(List<SendPort> sendPorts, string message, string command)
+        {
+            #region TopLevelColumn
+            AdaptiveColumnSet topLevelColumnSet = CreateTopLevelColumnSet();
+            #endregion
+
+
+            #region ChoiceList
+            
+            AdaptiveChoiceSetInput choiceSetInput = new AdaptiveChoiceSetInput()
+            {
+                Id = "sendPortChoiceSet",
+                Separator = true,
+                Style = AdaptiveChoiceInputStyle.Compact,
+                                
+            };
+
+            foreach(SendPort sendPort in  sendPorts)
+            {
+                string name = sendPort.Name;
+
+                AdaptiveChoice choice = new AdaptiveChoice()
+                {
+                    Title = name,
+                    Value = name
+                };
+
+                choiceSetInput.Choices.Add(choice);
+                
+            }
+            AdaptiveCard adaptiveCard = new AdaptiveCard();
+            adaptiveCard.Body.Add(topLevelColumnSet);
+            adaptiveCard.Body.Add(new AdaptiveTextBlock(){Id = "header", Text = message, Wrap = true, Color = AdaptiveTextColor.Accent, IsSubtle = true});
+            adaptiveCard.Body.Add(choiceSetInput);
+            adaptiveCard.Actions = new List<AdaptiveAction>()
+            {
+                new AdaptiveSubmitAction()
+                {
+                    Id = "submit",
+                    Title = "Submit",
+                    DataJson =  "{\"command\":\""  + command + "\"}"
+                }
+            };
+            
+            #endregion
+
+            string adaptiveCardJson = adaptiveCard.ToJson();
+            adaptiveCardJson = RenderStaticImage(adaptiveCardJson, Constants.BizManDummyUrl, Constants.BizManImagePath);
+            return adaptiveCardJson;
+
+        }
+        #endregion
+
         #region CommonMethods
 
         /// <summary>

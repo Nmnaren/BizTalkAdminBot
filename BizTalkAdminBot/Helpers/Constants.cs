@@ -96,7 +96,7 @@
         /// <summary>
         /// Request Used to Post Data to Logic App
         /// </summary>
-        public const string PostRequest = "\"operation\": \"{0}\"";
+        public const string PostRequest = "\"operation\": \"{0}\", \"receiveport\": \"{1}\", \"receivelocation\": \"{2}\", \"sendport\": \"{3}\"";
 
         /// <summary>
         /// Url of the Logic APP which connects the Bot to the On Premises BizTalk Environment
@@ -140,6 +140,8 @@
         /// Base url for the reports
         /// </summary>
         public const string ReportBaseUrl = "https://{0}.blob.core.windows.net/biztalkadminbotcommon/{1}";
+
+        public const string LASuccessResponse = "\"status\": \"true\"";
 
     }
 }

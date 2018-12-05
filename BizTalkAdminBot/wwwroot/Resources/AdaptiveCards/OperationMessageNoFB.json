@@ -73,6 +73,18 @@
             "data": "getsuspendedinstances"
         },
         {
+            "type": "Action.Submit",
+            "id": "bc3bd761-e914-4aae-8655-db34b3c31186",
+            "title": "Enable Send Port",
+            "data": "startsendport"
+        },
+        {
+            "type": "Action.Submit",
+            "id": "bc3bd761-e914-4aae-8655-db34b3c31187",
+            "title": "Enable Send Port",
+            "data": "stopsendport"
+        },
+        {
           "type": "Action.Submit",
           "id": "bc3bd761-e914-4aae-8655-db34b3c31182",
           "title": "Sign Out",
