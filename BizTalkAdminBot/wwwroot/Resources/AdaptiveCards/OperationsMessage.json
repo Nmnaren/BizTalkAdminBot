@@ -84,6 +84,18 @@
             "title": "Stop Send Port",
             "data": "stopsendport"
         },
+        {
+            "type": "Action.Submit",
+            "id": "90330190-b33d-4bea-b0c9-be233013bf50",
+            "title": "Disable Receive Location",
+            "data": "disablerl"
+        },
+        {
+            "type": "Action.Submit",
+            "id": "68bea977-8f97-45b4-99e8-8bf720d8d31b",
+            "title": "Enable Receive Location",
+            "data": "enablerl"
+        },
       {
         "type": "Action.Submit",
         "id": "172d4149-1e7f-4120-9497-0218e36b3dbf",

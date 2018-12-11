@@ -225,6 +225,7 @@ namespace BizTalkAdminBot
             BizTalkOperationApiHelper apiHelper;
             List<Application> applications = new List<Application>();
             List<SendPort> sendPorts = new List<SendPort>();
+            List<ReceiveLocation> receiveLocations = new List<ReceiveLocation>();
             List<string> reports = new List<string>();
             BlobHelper blobHelper;
 
@@ -452,6 +453,82 @@ namespace BizTalkAdminBot
                             }
                             break;
 
+                        case "enablerl":
+                            receiveLocations = await _accessors.ReceiveLocationState.GetAsync(stepContext.Context, () => new List<ReceiveLocation>(), cancellationToken);
+                            if(receiveLocations.Count == 0 || receiveLocations == null)
+                            {
+                                apiHelper = new BizTalkOperationApiHelper("getrls");
+                                receiveLocations = await apiHelper.GetReceiveLocationsAsync();
+                                
+                            }
+
+                            if(receiveLocations.Count == 0)
+                            {
+                                await stepContext.Context.SendActivityAsync(string.Format(Constants.NotFoundMessage, "enablerl"), cancellationToken: cancellationToken);
+
+                            }
+                            else
+                            {
+                                //await _accessors.SendPortState.SetAsync(stepContext.Context, sendPorts, cancellationToken);
+                                //await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
+
+                                if(receiveLocations.Where(x => !x.Enable).ToList().Count() > 0)
+                                {
+                                    adaptiveCardData = AdaptiveCardsHelper.CreateSelectReceiveLocationListAdaptiveCard(receiveLocations.Where(x => !x.Enable).ToList(), "Please Select a Receive Location To Enable", "enablerl");
+                                    await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
+
+                                }
+                                else
+                                {
+                                    await stepContext.Context.SendActivityAsync("No Receive Location is in Disabled State. Please Slect another option.");
+                                    await stepContext.Context.SendActivityAsync
+                                    (DialogHelpers.CreateReply(stepContext.Context, 
+                                    string.Format(Constants.AdaptiveCardPath, (isFeedbackProvided ? Constants.AdaptiveCards.OperationMessageNoFB.ToString() : Constants.AdaptiveCards.OperationsMessage.ToString())) 
+                                    ,true), cancellationToken);
+                                }
+
+
+                            }
+                            break;
+                        
+                        case "disablerl":
+                            receiveLocations = await _accessors.ReceiveLocationState.GetAsync(stepContext.Context, () => new List<ReceiveLocation>(), cancellationToken);
+                            if(receiveLocations.Count == 0 || receiveLocations == null)
+                            {
+                                apiHelper = new BizTalkOperationApiHelper("getrls");
+                                receiveLocations = await apiHelper.GetReceiveLocationsAsync();
+                                
+                            }
+
+                            if(receiveLocations.Count == 0)
+                            {
+                                await stepContext.Context.SendActivityAsync(string.Format(Constants.NotFoundMessage, "disablerl"), cancellationToken: cancellationToken);
+
+                            }
+                            else
+                            {
+                                //await _accessors.SendPortState.SetAsync(stepContext.Context, sendPorts, cancellationToken);
+                                //await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
+
+                                if(receiveLocations.Where(x => !x.Enable).ToList().Count() > 0)
+                                {
+                                    adaptiveCardData = AdaptiveCardsHelper.CreateSelectReceiveLocationListAdaptiveCard(receiveLocations.Where(x => !x.Enable).ToList(), "Please Select a Receive Location To Disable", "disablerl");
+                                    await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
+
+                                }
+                                else
+                                {
+                                    await stepContext.Context.SendActivityAsync("No Receive Location is in Enabled State. Please Slect another option.");
+                                    await stepContext.Context.SendActivityAsync
+                                    (DialogHelpers.CreateReply(stepContext.Context, 
+                                    string.Format(Constants.AdaptiveCardPath, (isFeedbackProvided ? Constants.AdaptiveCards.OperationMessageNoFB.ToString() : Constants.AdaptiveCards.OperationsMessage.ToString())) 
+                                    ,true), cancellationToken);
+                                }
+
+
+                            }
+                            break;
+
                         case "feedback":
                             
                             adaptiveCardData = string.Format(Constants.AdaptiveCardPath, Constants.AdaptiveCards.FeedBackCard.ToString());
@@ -587,6 +664,50 @@ namespace BizTalkAdminBot
 
                             }
 
+                            await stepContext.Context.SendActivityAsync(message, cancellationToken: cancellationToken);
+                            break;
+                        case "enablerl":
+
+                            string receiveLocation = commandToken["receiveLocationsChoiceSet"].Value<string>();
+                            apiHelper = new BizTalkOperationApiHelper("getrls");
+                            receiveLocations = await apiHelper.GetReceiveLocationsAsync();
+
+                            string receivePort = receiveLocations.Where(x => x.Name == receiveLocation).FirstOrDefault().ReceivePortName;
+
+                            //Stop the RL now
+                            apiHelper = new BizTalkOperationApiHelper("enablerl", receiveLocation, receivePort);
+                            bool rlStatus = await apiHelper.ChangeReceiveLocationStateAsync();
+                            if(rlStatus)
+                            {
+                                message = "Operation Completed Successfully";
+
+                            }
+                            else
+                            {
+                                message = "Operation Failed";
+                            }
+                            await stepContext.Context.SendActivityAsync(message, cancellationToken: cancellationToken);
+                            break;
+
+                        case "disablerl":
+                            string rl = commandToken["receiveLocationsChoiceSet"].Value<string>();
+                            apiHelper = new BizTalkOperationApiHelper("getrls");
+                            receiveLocations = await apiHelper.GetReceiveLocationsAsync();
+
+                            string rp = receiveLocations.Where(x => x.Name == rl).FirstOrDefault().ReceivePortName;
+
+                            //Stop the RL now
+                            apiHelper = new BizTalkOperationApiHelper("disablerl", rl, rp);
+                            bool rlopStatus = await apiHelper.ChangeReceiveLocationStateAsync();
+                            if(rlopStatus)
+                            {
+                                message = "Operation Completed Successfully";
+
+                            }
+                            else
+                            {
+                                message = "Operation Failed";
+                            }
                             await stepContext.Context.SendActivityAsync(message, cancellationToken: cancellationToken);
                             break;
 

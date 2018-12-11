@@ -35,7 +35,7 @@ namespace BizTalkAdminBot.Helpers
         }
 
         /// <summary>
-        /// Constructor To help the Start/stop of Send port
+        /// Constructor To help the Start/Stop of Send port
         /// </summary>
         /// <param name="operation">operation Name</param>
         /// <param name="sendPort">Send Port Name</param>
@@ -46,6 +46,21 @@ namespace BizTalkAdminBot.Helpers
             _receivelocation = string.Empty;
             _receiveport = string.Empty;
             _sendport = sendPort;
+
+        }
+
+        /// <summary>
+        /// Constructor to help Enable/Disable the Receive Locations
+        /// </summary>
+        /// <param name="operation">operation Name</param>
+        /// <param name="receiveLocation">Receive Location name</param>
+        /// <param name="receivePort">Receive Port Name</param>
+        public BizTalkOperationApiHelper(string operation, string receiveLocation, string receivePort)
+        {
+            _operation = operation;
+            _receivelocation = receiveLocation;
+            _receiveport = receivePort;
+            _sendport = string.Empty;
 
         }
         
@@ -146,6 +161,31 @@ namespace BizTalkAdminBot.Helpers
             }
 
             return instances;
+        }
+
+        public async Task<List<ReceiveLocation>> GetReceiveLocationsAsync()
+        {
+            List<ReceiveLocation> receiveLocations = new List<ReceiveLocation>();
+            string rljson = await GetOnPremDataAsync();
+            if(!string.IsNullOrEmpty(rljson))
+            {
+                receiveLocations = JsonConvert.DeserializeObject<List<ReceiveLocation>>(rljson);
+
+            }
+            return receiveLocations;
+        }
+
+        public async Task<bool> ChangeReceiveLocationStateAsync()
+        {
+            bool status = false;
+            string responseJson = await GetOnPremDataAsync();
+            if(responseJson.Contains(Constants.LASuccessResponse))
+            {
+                status = true;    
+            }
+            
+            return status;
+
         }
 
 

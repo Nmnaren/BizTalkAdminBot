@@ -155,6 +155,7 @@ namespace BizTalkAdminBot
                     HostState = userState.CreateProperty<List<Host>>(BizTalkAdminBotAccessors.HostStateName),
                     OrchestrationState = userState.CreateProperty<List<Orchestration>>(BizTalkAdminBotAccessors.OrchestrationStateName),
                     SendPortState = userState.CreateProperty<List<SendPort>>(BizTalkAdminBotAccessors.SendPortStateName),
+                    ReceiveLocationState = userState.CreateProperty<List<ReceiveLocation>>(BizTalkAdminBotAccessors.ReceiveLocationStateName),
                     ConversationDialogState = userState.CreateProperty<DialogState>(BizTalkAdminBotAccessors.DialogStateName),
                     FeedbackState = userState.CreateProperty<bool>(BizTalkAdminBotAccessors.FeedbackStateName),
                     Reports = userState.CreateProperty<List<string>>(BizTalkAdminBotAccessors.ReportStateName)

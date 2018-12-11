@@ -685,6 +685,147 @@ namespace BizTalkAdminBot.Helpers
         }
         #endregion
 
+        #region CreateSelectReceiveLocationListAdaptiveCard
+         public static string CreateSelectReceiveLocationListAdaptiveCard(List<ReceiveLocation> receiveLocations, string message, string command)
+        {
+            #region TopLevelColumn
+            AdaptiveColumnSet topLevelColumnSet = CreateTopLevelColumnSet();
+            #endregion
+
+
+            #region ChoiceList
+            
+            AdaptiveChoiceSetInput choiceSetInput = new AdaptiveChoiceSetInput()
+            {
+                Id = "receiveLocationsChoiceSet",
+                Separator = true,
+                Style = AdaptiveChoiceInputStyle.Compact,
+                                
+            };
+
+            foreach(ReceiveLocation receiveLocation in  receiveLocations)
+            {
+                string name = receiveLocation.Name;
+
+                AdaptiveChoice choice = new AdaptiveChoice()
+                {
+                    Title = name,
+                    Value = name
+                };
+
+                choiceSetInput.Choices.Add(choice);
+                
+            }
+            AdaptiveCard adaptiveCard = new AdaptiveCard();
+            adaptiveCard.Body.Add(topLevelColumnSet);
+            adaptiveCard.Body.Add(new AdaptiveTextBlock(){Id = "header", Text = message, Wrap = true, Color = AdaptiveTextColor.Accent, IsSubtle = true});
+            adaptiveCard.Body.Add(choiceSetInput);
+            adaptiveCard.Actions = new List<AdaptiveAction>()
+            {
+                new AdaptiveSubmitAction()
+                {
+                    Id = "submit",
+                    Title = "Submit",
+                    DataJson =  "{\"command\":\""  + command + "\"}"
+                }
+            };
+            
+            #endregion
+
+            string adaptiveCardJson = adaptiveCard.ToJson();
+            adaptiveCardJson = RenderStaticImage(adaptiveCardJson, Constants.BizManDummyUrl, Constants.BizManImagePath);
+            return adaptiveCardJson;
+
+        }
+        #endregion
+
+        #region CreateGetReceiveLocationsByAppAdaptiveCard
+
+        /// <summary>
+        /// Create the Adaptive Card to display the Receive Locations in particular BizTalk application
+        /// </summary>
+        /// <param name="receiveLocations">List of Receive Locations</param>
+        /// <param name="appName">BizTalk Application Name</param>
+        /// <returns>Adaptive Card Json String</returns>
+        public static string CreateGetReceiveLocationsByAppAdaptiveCard(List<ReceiveLocation> receiveLocations, string appName)
+        {
+            #region TopLevelColumn
+            AdaptiveColumnSet topLevelColumnSet = CreateTopLevelColumnSet();
+            #endregion
+
+            #region Container
+
+            AdaptiveContainer container = new AdaptiveContainer()
+            {
+                Id = "container",
+                Spacing = AdaptiveSpacing.Default,
+                Separator = true,
+                Items = new List<AdaptiveElement>()
+                {
+                    new AdaptiveTextBlock()
+                    {
+                        Id = "ReceiveLocationsByAppName",
+                        Color = AdaptiveTextColor.Default,
+                        IsSubtle = true,
+                        Separator = true,
+                        Spacing = AdaptiveSpacing.Default,
+                        Text = string.Format("Receive Locations in {0}", appName)
+
+                    }
+                }
+
+            };
+            
+            #endregion
+
+            #region FactSet
+
+            
+            foreach(ReceiveLocation receiveLocation in receiveLocations)
+            {
+                string name = receiveLocation.Name;
+                
+                AdaptiveFactSet receiveLocationFactSet = new AdaptiveFactSet()
+                {
+                    Id = name,
+                    Separator = true,
+                    Facts = new List<AdaptiveFact>()
+                    {
+                        new AdaptiveFact()
+                        {
+                            Title = "Name",
+                            Value = name,
+                        },
+                        new AdaptiveFact()
+                        {
+                            Title = "Handler",
+                            Value = receiveLocation.ReceiveHandler
+                        },
+
+                        new AdaptiveFact()
+                        {
+                            Title = "Status",
+                            Value = receiveLocation.Enable ? "Enabled" : "Disabled"
+                        }
+                    }
+                };
+                container.Items.Add(receiveLocationFactSet);
+                
+            }
+            #endregion
+
+
+            AdaptiveCard adaptiveCard = new AdaptiveCard();
+            adaptiveCard.Body.Add(topLevelColumnSet);
+            adaptiveCard.Body.Add(container);
+            string adaptiveCardJson = adaptiveCard.ToJson();
+            adaptiveCardJson = RenderStaticImage(adaptiveCardJson, Constants.BizManDummyUrl, Constants.BizManImagePath);
+            return adaptiveCardJson;
+
+        }
+
+        #endregion
+
         #region CommonMethods
 
         /// <summary>

@@ -104,6 +104,18 @@
         },
         {
             "type": "Action.Submit",
+            "id": "90330190-b33d-4bea-b0c9-be233013bf50",
+            "title": "Disable Receive Location",
+            "data": "disablerl"
+        },
+        {
+            "type": "Action.Submit",
+            "id": "68bea977-8f97-45b4-99e8-8bf720d8d31b",
+            "title": "Enable Receive Location",
+            "data": "enablerl"
+        },
+        {
+            "type": "Action.Submit",
             "id": "bc3bd761-e914-4aae-8655-db34b3c31182",
             "title": "Sign out",
             "data": "signout"

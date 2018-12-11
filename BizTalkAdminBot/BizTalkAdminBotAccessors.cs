@@ -37,6 +37,8 @@ namespace BizTalkAdminBot
 
         public static readonly string ReportStateName = $"{nameof(BizTalkAdminBotAccessors)}.ReportStateName";
 
+        public static readonly string ReceiveLocationStateName = $"{nameof(BizTalkAdminBotAccessors)}.ReceiveLOcationState";
+
         public IStatePropertyAccessor<DialogState> ConversationDialogState { get; set; }
 
         public IStatePropertyAccessor<string> CommandState { get; set; }
@@ -48,6 +50,8 @@ namespace BizTalkAdminBot
         public IStatePropertyAccessor<List<Host>> HostState {get; set; }
 
         public IStatePropertyAccessor<List<SendPort>> SendPortState {get; set; } 
+
+        public IStatePropertyAccessor<List<ReceiveLocation>> ReceiveLocationState {get; set;}
 
         public IStatePropertyAccessor<bool> FeedbackState {get; set;}
 
