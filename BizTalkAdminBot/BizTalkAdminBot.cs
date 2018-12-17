@@ -510,9 +510,9 @@ namespace BizTalkAdminBot
                                 //await _accessors.SendPortState.SetAsync(stepContext.Context, sendPorts, cancellationToken);
                                 //await _accessors.UserState.SaveChangesAsync(stepContext.Context, cancellationToken: cancellationToken);
 
-                                if(receiveLocations.Where(x => !x.Enable).ToList().Count() > 0)
+                                if(receiveLocations.Where(x => x.Enable).ToList().Count() > 0)
                                 {
-                                    adaptiveCardData = AdaptiveCardsHelper.CreateSelectReceiveLocationListAdaptiveCard(receiveLocations.Where(x => !x.Enable).ToList(), "Please Select a Receive Location To Disable", "disablerl");
+                                    adaptiveCardData = AdaptiveCardsHelper.CreateSelectReceiveLocationListAdaptiveCard(receiveLocations.Where(x => x.Enable).ToList(), "Please Select a Receive Location To Disable", "disablerl");
                                     await stepContext.Context.SendActivityAsync(DialogHelpers.CreateReply(stepContext.Context, adaptiveCardData, false), cancellationToken);
 
                                 }
